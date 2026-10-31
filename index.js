@@ -25,140 +25,151 @@ let isConnecting = false
 
 const MENU_PIC = "https://files.catbox.moe/msjf6p.jpg"
 
-const BOT_MENU = `◈┈▉ ＣＲＡＳＨＥＲ ＭＤ ▉┄◈
+// FANCY FONT CONVERTER - ALL REPLIES USE THIS
+function fancy(text) {
+    const map = {
+        'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ',
+        'A':'ᴀ','B':'ʙ','C':'ᴄ','D':'ᴅ','E':'ᴇ','F':'ғ','G':'ɢ','H':'ʜ','I':'ɪ','J':'ᴊ','K':'ᴋ','L':'ʟ','M':'ᴍ','N':'ɴ','O':'ᴏ','P':'ᴘ','Q':'ǫ','R':'ʀ','S':'ꜱ','T':'ᴛ','U':'ᴜ','V':'ᴠ','W':'ᴡ','X':'x','Y':'ʏ','Z':'ᴢ',
+        '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9'
+    }
+    return text.split('').map(c => map[c] || c).join('')
+}
 
-> ╭━━━⚡ 𝐁𝐎𝐓 𝐈𝐍𝐅𝐎〕━╮
-> ┃ 👑 𝙾𝚆𝙽𝙴𝚁: CRASHER
-> ┃ ⚙️ 𝙿𝚁𝙴𝙵𝙸𝚇: .
-> ┃ 📊 𝚃𝙾𝚃𝙰𝙻 𝙲𝙼𝙳𝚂: 100
-> ╰━━━━━━━━━━━━━━━━╯
+// NEW MENU YOU GAVE ME - EXACTLY
+const BOT_MENU = `┌ ─ 〔 ＣＲＡＳＨＥＲ ＭＤ 〕
+│ ${fancy('Creator')} ϟ CRASHER
+│ ${fancy('Bot Name')} ϟ CRASHER MD
+│ ${fancy('Mode Bot')} ϟ public (Multi)
+│ ${fancy('Prefix')} ϟ .
+│ ${fancy('Version')} ϟ 1.0.0
+│ ${fancy('Total Cmds')} ϟ 100
+└
 
-╭━━━   ᴏᴡɴᴇʀ ╮
-┃ ✦ .menu
-┃ ✦ .help
-┃ ✦ .ping
-┃ ✦ .alive
-┃ ✦ .owner
-┃ ✦ .runtime
-┃ ✦ .botinfo
-┃ ✦ .restart
-┃ ✦ .shutdown
-┃ ✦ .broadcast
-┃ ✦ .setprefix
-┃ ✦ .setname
-┃ ✦ .setbio
-┃ ✦ .setpp
-┃ ✦ .join
-┃ ✦ .leave
-┃ ✦ .block
-┃ ✦ .unblock
-┃ ✦ .ban
-┃ ✦ .unban
-╰━━━━━━━━━━━━━╯
+┌ ─ 〔 OWNER 〕
+│ • .menu
+│ • .help
+│ • .ping
+│ • .alive
+│ • .owner
+│ • .runtime
+│ • .botinfo
+│ • .restart
+│ • .shutdown
+│ • .broadcast
+│ • .setprefix
+│ • .setname
+│ • .setbio
+│ • .setpp
+│ • .join
+│ • .leave
+│ • .block
+│ • .unblock
+│ • .ban
+│ • .unban
+└
 
-╭━━━〔 ᴀᴜᴛᴏ ━━╮
-┃ ✧ .autoread
-┃ ✧ .autotyping
-┃ ✧ .autoonline
-┃ ✧ .autorecording
-┃ ✧ .autoreact
-┃ ✧ .autoreply
-┃ ✧ .autosticker
-┃ ✧ .autoview
-┃ ✧ .autobio
-┃ ✧ .autolikestatus
-╰━━━━━━━━━━━━━━╯
+┌ ─ 〔 AUTO 〕
+│ • .autoread
+│ • .autotyping
+│ • .autoonline
+│ • .autorecording
+│ • .autoreact
+│ • .autoreply
+│ • .autosticker
+│ • .autoview
+│ • .autobio
+│ • .autolikestatus
+└
 
-╭━━━  ᴀɴᴛɪ ━━━━╮
-┃ ◈ .antilink
-┃ ◈ .antibot
-┃ ◈ .antispam
-┃ ◈ .antiflood
-┃ ◈ .antitag
-┃ ◈ .antidelete
-┃ ◈ .antibadword
-┃ ◈ .antisticker
-┃ ◈ .antifake
-┃ ◈ .antipromote
-╰━━━━━━━━━━━━━╯
+┌ ─ 〔 ANTI 〕
+│ • .antilink
+│ • .antibot
+│ • .antispam
+│ • .antiflood
+│ • .antitag
+│ • .antidelete
+│ • .antibadword
+│ • .antisticker
+│ • .antifake
+│ • .antipromote
+└
 
-╭━━ ᴍᴏᴅᴇʀᴀᴛᴏʀ━╮
-┃ ▸ .kick
-┃ ▸ .add
-┃ ▸ .promote
-┃ ▸ .demote
-┃ ▸ .warn
-┃ ▸ .warnings
-┃ ▸ .resetwarn
-┃ ▸ .mute
-┃ ▸ .unmute
-┃ ▸ .delete
-╰━━━━━━━━━━╯
+┌ ─ 〔 MODERATOR 〕
+│ • .kick
+│ • .add
+│ • .promote
+│ • .demote
+│ • .warn
+│ • .warnings
+│ • .resetwarn
+│ • .mute
+│ • .unmute
+│ • .delete
+└
 
-╭ ━━━ɢʀᴏᴜᴘ ━━╮
-┃ ➤ .groupinfo
-┃ ➤ .grouplink
-┃ ➤ .setname
-┃ ➤ .setdesc
-┃ ➤ .open
-┃ ➤ .close
-┃ ➤ .tagall
-┃ ➤ .hidetag
-┃ ➤ .listmembers
-┃ ➤ .admins
-╰━━━━━━━━━━━╯
+┌ ─ 〔 GROUP 〕
+│ • .groupinfo
+│ • .grouplink
+│ • .setname
+│ • .setdesc
+│ • .open
+│ • .close
+│ • .tagall
+│ • .hidetag
+│ • .listmembers
+│ • .admins
+└
 
-╭━━ ᴠᴠ ━━╮
-┃ ▸ .vv
-╰━━━━━━━╯
+┌ ─ 〔 VIEWONCE 〕
+│ • .vv
+└
 
-╭ down ᴍᴇɴᴜ 〕━╮
-┃ ⇩ .play
-┃ ⇩ .song
-┃ ⇩ .video
-┃ ⇩ .tiktok
-┃ ⇩ .instagram
-┃ ⇩ .facebook
-┃ ⇩ .mediafire
-┃ ⇩ .apk
-┃ ⇩ .pinterest
-┃ ⇩ .github
-╰━━━━━━━━━━━╯
+┌ ─ 〔 DOWNLOADER 〕
+│ • .play
+│ • .song
+│ • .video
+│ • .tiktok
+│ • .instagram
+│ • .facebook
+│ • .mediafire
+│ • .apk
+│ • .pinterest
+│ • .github
+└
 
-╭ ᴛᴏᴏʟs ᴍᴇɴᴜ  ━╮
-┃ ⌕ .weather
-┃ ⌕ .translate
-┃ ⌕ .calculate
-┃ ⌕ .shorturl
-╰━━━━━━━━━━━╯
+┌ ─ 〔 TOOLS 〕
+│ • .weather
+│ • .translate
+│ • .calculate
+│ • .shorturl
+└
 
-╭⚙️ sᴇᴛᴛɪɴɢs ᴍᴇɴᴜ━╮
-┃ ⚙ .prefix
-┃ ⚙ .public
-┃ ⚙ .private
-┃ ⚙ .setmode
-┃ ⚙ .language
-╰━━━━━━━━━━━━╯
+┌ ─ 〔 SETTINGS 〕
+│ • .prefix
+│ • .public
+│ • .private
+│ • .setmode
+│ • .language
+└
 
-╭ sᴛɪᴄᴋᴇʀ ᴍᴇɴu ╮
-┃ ✦ .sticker
-┃ ✦ .toimg
-┃ ✦ .take
-┃ ✦ .attp
-┃ ✦ .smeme
-╰━━━━━━━━━━╯
->  ғᴜɴ ᴍᴇɴᴜ 
-> ╭━ ғᴜɴ ᴍᴇɴᴜ ━╮
-> ┃ ♡ .joke
-> ┃ ♡ .quote
-> ┃ ♡ .meme
-> ┃ ♡ .truth
-> ┃ ♡ .dare
-> ╰━━━━━━━━━━╯
+┌ ─ 〔 STICKER 〕
+│ • .sticker
+│ • .toimg
+│ • .take
+│ • .attp
+│ • .smeme
+└
 
-◈┈▉ ＣＲＡＳＨＥＲ ＭＤ ▉┄◈
-> ⚡ POWER • SPEED • CONTROL
-> 🐺 CRASHER MD — 2026`
+┌ ─ 〔 FUN 〕
+│ • .joke
+│ • .quote
+│ • .meme
+│ • .truth
+│ • .dare
+└
+
+> ◈┈▉ｃʀᴀꜱʜᴇʀ ᴍᴅ▉┄◈
+> ${fancy('Power by 404 error')}`
 
 global.db = global.db || { auto: {}, anti: {}, warns: {}, settings: { mode: 'public' } }
 
@@ -195,17 +206,27 @@ async function startCrasher() {
         logger: pino({ level: 'silent' }), 
         printQRInTerminal: false,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) },
-        browser: Browsers.ubuntu('Chrome'), 
-        markOnlineOnConnect: false, 
+        // STEALTH - NO CHROME, NO ONLINE
+        browser: Browsers.macOS('Firefox'), 
+        markOnlineOnConnect: false,
         syncFullHistory: false,
         msgRetryCounterCache,
-        getMessage: async (key) => { return { conversation: 'hello' } },
-        shouldSyncHistoryMessage: () => false
+        // FIX WAITING FOR THIS MESSAGE
+        getMessage: async (key) => { return undefined },
+        shouldSyncHistoryMessage: () => false,
+        // FAST
+        fireInitQueries: false,
+        shouldIgnoreJid: jid => false,
     })
     sock.ev.on('creds.update', saveCreds)
     sock.ev.on('connection.update', async (u) => {
         const { connection, lastDisconnect } = u
-        if (connection === 'open') { isConnecting = false; console.log(chalk.green('✅ Connected')) }
+        if (connection === 'open') { 
+            isConnecting = false; 
+            console.log(chalk.green('✅ Connected - STEALTH MODE'))
+            // STAY OFFLINE - LAST SEEN ONLY
+            try { await sock.sendPresenceUpdate('unavailable') } catch {}
+        }
         if (connection === 'close') {
             isConnecting = false
             const code = lastDisconnect?.error instanceof Boom ? lastDisconnect.error.output?.statusCode : 0
@@ -240,6 +261,10 @@ async function handleMessage(m) {
     const isGroupChat = isGroup(from)
     const owner = isOwner(sender)
 
+    // FAST REACTION SYSTEM - ⏳ RUNNING
+    const doReact = async (emoji) => { try { await sock.sendMessage(from, { react: { text: emoji, key: m.key } }) } catch {} }
+    await doReact('⏳')
+
     let participants = [], isAdmin = false, isBotAdmin = false, groupMetadata = null
     if (isGroupChat) {
         try {
@@ -255,20 +280,27 @@ async function handleMessage(m) {
                 if (isPAdmin && pid === senderJid) isAdmin = true
             }
             if (owner) isAdmin = true
-        } catch (e) { console.log('groupMeta fail', e.message) }
+        } catch (e) {}
     }
 
-    const react = async (emoji) => { try { await sock.sendMessage(from, { react: { text: emoji, key: m.key } }) } catch {} }
+    // FANCY REPLY - ALL TEXT IN FANCY FONT
     const reply = async (teks) => {
-        try { await sock.readMessages([m.key]) } catch {}
-        try { await sock.sendMessage(from, { text: teks }, { quoted: m }) } catch { await sock.sendMessage(from, { text: teks }) }
+        await doReact('💀') // WORKING
+        try { 
+            await sock.sendMessage(from, { text: fancy(teks) }, { quoted: m }) 
+        } catch { 
+            await sock.sendMessage(from, { text: fancy(teks) }) 
+        }
+        await doReact('✅') // COMPLETE
     }
     const sendImage = async (caption, url = MENU_PIC) => {
-        try { await sock.readMessages([m.key]) } catch {}
-        try { await sock.sendMessage(from, { image: { url }, caption }, { quoted: m }) } catch (e) {
-            console.log('Image fail, sending text', e.message)
+        await doReact('💀')
+        try { 
+            await sock.sendMessage(from, { image: { url }, caption: caption }, { quoted: m }) 
+        } catch (e) {
             await sock.sendMessage(from, { text: caption }, { quoted: m })
         }
+        await doReact('✅')
     }
 
     const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage
@@ -278,13 +310,13 @@ async function handleMessage(m) {
     const botAdmin = async () => { if (!isBotAdmin) { await reply('Bot must be admin!'); return true } return false }
 
     switch(command){
-        case 'menu': case 'help': await react('📜'); return await sendImage(BOT_MENU)
-        case 'ping': await react('🏓'); return await reply(`🏓 Pong! ${Date.now() - m.messageTimestamp*1000}ms`)
-        case 'alive': await react('🐺'); return await sendImage(`🐺 CRASHER MD ALIVE\n⚡ Power Speed Control\n⏱️ ${runtime(process.uptime())}`)
-        case 'owner': await react('👑'); return await reply(`👑 Owner: wa.me/${config.owner[0].replace(/[^0-9]/g,'')}`)
-        case 'runtime': await react('⏱️'); return await reply(`⏱️ Runtime: ${runtime(process.uptime())}`)
-        case 'botinfo': await react('🤖'); return await sendImage(`🤖 ${config.botName}\nPrefix: ${config.prefix}\nMode: ${global.db.settings.mode}\nTotal: 100`)
-        case 'restart': if(await ownerOnly()) return; await react('♻️'); await reply('♻️ Restarting...'); process.exit(0)
+        case 'menu': case 'help': return await sendImage(BOT_MENU)
+        case 'ping': return await reply(`🏓 Pong! ${Date.now() - m.messageTimestamp*1000}ms\n⏱️ Runtime: ${runtime(process.uptime())}`)
+        case 'alive': return await sendImage(`🐺 ${fancy('CRASHER MD ALIVE')}\n⚡ ${fancy('Power Speed Control')}\n⏱️ ${runtime(process.uptime())}`)
+        case 'owner': return await reply(`👑 Owner: wa.me/${config.owner[0].replace(/[^0-9]/g,'')}`)
+        case 'runtime': return await reply(`⏱️ Runtime: ${runtime(process.uptime())}`)
+        case 'botinfo': return await sendImage(`🤖 ${config.botName}\nPrefix: ${config.prefix}\nMode: ${global.db.settings.mode}\nTotal: 100`)
+        case 'restart': if(await ownerOnly()) return; await reply('♻️ Restarting...'); process.exit(0)
         case 'shutdown': if(await ownerOnly()) return; await reply('💤 Shutdown'); process.exit(0)
         case 'broadcast': if(await ownerOnly()) return; if(!text) return await reply('Text needed'); for(let id of Object.keys(await sock.groupFetchAllParticipating())){ await sock.sendMessage(id, { text: `📢 Broadcast:\n${text}` }) } return await reply('Broadcast sent')
         case 'setprefix': if(await ownerOnly()) return; if(!text) return await reply('Give new prefix'); config.prefix = text; return await reply(`Prefix: ${text}`)
@@ -309,7 +341,7 @@ async function handleMessage(m) {
         case 'autolikestatus': global.db.auto.autolikestatus = text === 'on'; return await reply(`AutoLikeStatus ${text}`)
         case 'antilink': if(await groupOnly()||await adminOnly()) return; global.db.anti[from] = global.db.anti[from]||{}; global.db.anti[from].link = text==='on'; return await reply(`Antilink ${text}`)
         case 'antibot': case 'antispam': case 'antiflood': case 'antitag': case 'antidelete': case 'antibadword': case 'antisticker': case 'antifake': case 'antipromote': if(await groupOnly()||await adminOnly()) return; global.db.anti[from] = global.db.anti[from]||{}; global.db.anti[from][command] = text==='on'; return await reply(`${command} ${text}`)
-        case 'kick': { if(await groupOnly()||await adminOnly()||await botAdmin()) return; await react('👢'); const mention = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || (text? text.replace(/[^0-9]/g,'')+'@s.whatsapp.net':null); if(!mention) return await reply('Tag user'); await sock.groupParticipantsUpdate(from,[mention],'remove'); return await reply('Kicked') }
+        case 'kick': { if(await groupOnly()||await adminOnly()||await botAdmin()) return; const mention = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || (text? text.replace(/[^0-9]/g,'')+'@s.whatsapp.net':null); if(!mention) return await reply('Tag user'); await sock.groupParticipantsUpdate(from,[mention],'remove'); return await reply('Kicked') }
         case 'add': { if(await groupOnly()||await adminOnly()||await botAdmin()) return; const num = text.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; await sock.groupParticipantsUpdate(from,[num],'add'); return await reply('Added') }
         case 'promote': { if(await groupOnly()||await adminOnly()||await botAdmin()) return; const mention = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || text.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; await sock.groupParticipantsUpdate(from,[mention],'promote'); return await reply('Promoted') }
         case 'demote': { if(await groupOnly()||await adminOnly()||await botAdmin()) return; const mention = m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0] || text.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; await sock.groupParticipantsUpdate(from,[mention],'demote'); return await reply('Demoted') }
@@ -325,8 +357,8 @@ async function handleMessage(m) {
         case 'setdesc': if(await groupOnly()||await adminOnly()||await botAdmin()) return; await sock.groupUpdateDescription(from,text); return await reply('Desc updated')
         case 'open': if(await groupOnly()||await adminOnly()||await botAdmin()) return; await sock.groupSettingUpdate(from,'not_announcement'); return await reply('🔓 Opened')
         case 'close': if(await groupOnly()||await adminOnly()||await botAdmin()) return; await sock.groupSettingUpdate(from,'announcement'); return await reply('🔒 Closed')
-        case 'tagall': { if(await groupOnly()||await adminOnly()) return; await react('👥'); let txt = `*Tag All: ${text||''}*\n`; for(let p of participants) txt+=`@${p.id.split('@')[0]}\n`; await sock.sendMessage(from,{ text: txt, mentions: participants.map(a=>a.id) }, { quoted: m }); return }
-        case 'hidetag': { if(await groupOnly()||await adminOnly()) return; await sock.sendMessage(from,{ text: text||'hidetag', mentions: participants.map(a=>a.id) }); return }
+        case 'tagall': { if(await groupOnly()||await adminOnly()) return; let txt = `*Tag All: ${text||''}*\n`; for(let p of participants) txt+=`@${p.id.split('@')[0]}\n`; await doReact('💀'); await sock.sendMessage(from,{ text: txt, mentions: participants.map(a=>a.id) }, { quoted: m }); await doReact('✅'); return }
+        case 'hidetag': { if(await groupOnly()||await adminOnly()) return; await doReact('💀'); await sock.sendMessage(from,{ text: text||'hidetag', mentions: participants.map(a=>a.id) }); await doReact('✅'); return }
         case 'listmembers': if(await groupOnly()) return; return await reply(participants.map((p,i)=> `${i+1}. ${p.id.split('@')[0]} ${p.admin?'[admin]':''}`).join('\n'))
         case 'admins': if(await groupOnly()) return; const admins = participants.filter(p=>p.admin).map(p=>p.id); return await reply(`*Admins [${admins.length}]*\n${admins.map(a=> '@'+a.split('@')[0]).join('\n')}`)
         case 'vv': {
@@ -336,99 +368,43 @@ async function handleMessage(m) {
             const msgType = type.includes('image') ? 'image' : type.includes('video') ? 'video' : 'audio'
             try {
                 const buffer = await downloadMedia(qmsg[type], msgType)
+                await doReact('💀')
                 if(msgType==='image') await sock.sendMessage(from,{ image: buffer, caption: qmsg[type].caption||'' }, { quoted: m })
                 else if(msgType==='video') await sock.sendMessage(from,{ video: buffer, caption: qmsg[type].caption||'' }, { quoted: m })
                 else await sock.sendMessage(from,{ audio: buffer, mimetype: 'audio/mp4', ptt: true }, { quoted: m })
-            } catch(e){ return await reply('Failed: '+e.message) }
+                await doReact('✅')
+            } catch(e){ await doReact('❌'); return await reply('Failed: '+e.message) }
             break
         }
         case 'play': case 'song': if(!text) return await reply('Give song name'); return await reply(`🎵 Searching YT: ${text}`)
         case 'video': if(!text) return await reply('Give YT link'); return await reply(`🎬 Video: ${text}`)
         case 'tiktok': if(!text) return await reply('Give TikTok link'); return await reply(`TikTok: ${text}`)
-        case 'instagram': if(!text) return await reply('Give IG link'); return await reply(`IG: ${text}`)
+                case 'instagram': if(!text) return await reply('Give IG link'); return await reply(`IG: ${text}`)
         case 'facebook': if(!text) return await reply('Give FB link'); return await reply(`FB: ${text}`)
         case 'mediafire': if(!text) return await reply('Give MediaFire link'); return await reply(`MediaFire: ${text}`)
         case 'apk': if(!text) return await reply('Give app name'); return await reply(`APK: ${text}`)
         case 'pinterest': if(!text) return await reply('Give query'); return await sendImage(`Pinterest: ${text}`, `https://picsum.photos/600/400?random=${Date.now()}`)
         case 'github': if(!text) return await reply('Give github link'); return await reply(`GitHub: ${text}`)
         case 'weather': { if(!text) return await reply('Give city'); try { const res = await fetch(`https://wttr.in/${encodeURIComponent(text)}?format=3`); const t = await res.text(); return await reply(`🌤️ ${t}`) } catch { return await reply('Weather fail') } }
-                case 'translate': { 
-            if(!text) return await reply('.translate en | hello'); 
-            const [lang, ...rest] = text.split('|'); 
-            return await reply(`🌐 Translate [${lang.trim()}]: ${rest.join('|').trim()}`) 
-        }
-        case 'calculate': { 
-            if(!text) return await reply('Give expression: .calculate 2+2'); 
-            try { 
-                const result = eval(text); 
-                return await reply(`🧮 ${text} = ${result}`) 
-            } catch { 
-                return await reply('❌ Invalid calculation') 
-            } 
-        }
-        case 'shorturl': { 
-            if(!text) return await reply('Give url: .shorturl https://google.com'); 
-            return await reply(`🔗 Short URL:\nhttps://tinyurl.com/api-create.php?url=${encodeURIComponent(text)}`) 
-        }
-        case 'prefix': { 
-            return await reply(`⚙️ Current Prefix: ${config.prefix}`) 
-        }
-        case 'public': { 
-            global.db.settings.mode = 'public'; 
-            return await reply('✅ Bot set to PUBLIC mode') 
-        }
-        case 'private': { 
-            global.db.settings.mode = 'private'; 
-            return await reply('✅ Bot set to PRIVATE mode') 
-        }
-        case 'setmode': { 
-            if(!text) return await reply('.setmode public/private'); 
-            global.db.settings.mode = text.toLowerCase(); 
-            return await reply(`⚙️ Mode: ${text}`) 
-        }
-        case 'language': { 
-            return await reply('🌐 Language: English [EN]') 
-        }
-        case 'sticker': { 
-            const q = m.message.imageMessage || m.message.videoMessage || quoted?.imageMessage || quoted?.videoMessage; 
-            if(!q) return await reply('Send/Reply image/video with .sticker'); 
-            const buf = await downloadMedia(q, q.imageMessage ? 'image' : 'video'); 
-            await sock.sendMessage(from, { sticker: buf }, { quoted: m }); 
-            return 
-        }
-        case 'toimg': { 
-            const q = quoted?.stickerMessage; 
-            if(!q) return await reply('Reply to sticker with .toimg'); 
-            const buf = await downloadMedia(q, 'sticker'); 
-            await sock.sendMessage(from, { image: buf }, { quoted: m }); 
-            return 
-        }
-        case 'take': { 
-            return await reply('✅ Take done') 
-        }
-        case 'attp': { 
-            if(!text) return await reply('Give text: .attp Crasher'); 
-            return await sendImage(`Attp: ${text}`, `https://api.zenkey.my.id/api/textpro/attp?text=${encodeURIComponent(text)}`) 
-        }
-        case 'smeme': { 
-            return await reply(`😂 Smeme: ${text}`) 
-        }
-        case 'joke': { 
-            return await reply('😂 Why did the programmer cross the road? To debug the chicken! - CRASHER MD') 
-        }
-        case 'quote': { 
-            return await reply('💬 "Power • Speed • Control - CRASHER MD 🐺"') 
-        }
-        case 'meme': { 
-            return await sendImage('😂 Random Meme', `https://picsum.photos/600/400?random=${Date.now()}`) 
-        }
-        case 'truth': { 
-            return await reply('😳 Truth: What is your biggest fear?') 
-        }
-        case 'dare': { 
-            return await reply('😈 Dare: Send your last screenshot to group!') 
-        }
-        default: return
+        case 'translate': { if(!text) return await reply('.translate en | hello'); const [lang, ...rest] = text.split('|'); return await reply(`🌐 [${lang.trim()}]: ${rest.join('|').trim()}`) }
+        case 'calculate': { try { return await reply(`🧮 = ${eval(text)}`) } catch { return await reply('Invalid calc') } }
+        case 'shorturl': { if(!text) return await reply('Give url'); return await reply(`🔗 https://tinyurl.com/api-create.php?url=${encodeURIComponent(text)}`) }
+        case 'prefix': return await reply(`Prefix: ${config.prefix}`)
+        case 'public': global.db.settings.mode = 'public'; return await reply('Public ✅')
+        case 'private': global.db.settings.mode = 'private'; return await reply('Private ✅')
+        case 'setmode': global.db.settings.mode = text; return await reply(`Mode: ${text}`)
+        case 'language': return await reply('Lang: EN')
+        case 'sticker': { const q = m.message.imageMessage || quoted?.imageMessage; if(!q) return await reply('Send image with .sticker'); const buf = await downloadMedia(q, 'image'); await doReact('💀'); await sock.sendMessage(from,{ sticker: buf }, { quoted: m }); await doReact('✅'); return }
+        case 'toimg': { const q = quoted?.stickerMessage; if(!q) return await reply('Reply sticker'); const buf = await downloadMedia(q, 'sticker'); await doReact('💀'); await sock.sendMessage(from,{ image: buf }, { quoted: m }); await doReact('✅'); return }
+        case 'take': return await reply('Take done')
+        case 'attp': if(!text) return await reply('Text?'); return await sendImage(`Attp ${text}`, `https://api.zenkey.my.id/api/textpro/attp?text=${encodeURIComponent(text)}`)
+        case 'smeme': return await reply(`Smeme ${text}`)
+        case 'joke': return await reply('😂 Why did dev cross road? To debug chicken!')
+        case 'quote': return await reply('💬 Power Speed Control - CRASHER MD')
+        case 'meme': return await sendImage('Meme', `https://picsum.photos/600/400?random=${Date.now()}`)
+        case 'truth': return await reply('Truth: Biggest fear?')
+        case 'dare': return await reply('Dare: Send screenshot!')
+        default: await doReact('❌'); return
     }
 }
 
