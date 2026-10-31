@@ -1,7 +1,7 @@
 require('dotenv').config();
 
 module.exports = {
-  owner: ["2348102350169"],
+  owner: ["23471569915"],
   ownerName: "CRASHER",
   botName: process.env.BOT_NAME || "ＣＲＡＳＨＥＲ ＭＤ",
   prefix: process.env.PREFIX || ".",
