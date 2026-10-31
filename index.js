@@ -23,7 +23,7 @@ const app = express()
 let sock = null
 let isConnecting = false
 
-const MENU_PIC = "https://files.catbox.moe/msjf6p.jpg"
+const MENU_PIC = "https://files.catbox.moe/hhafg3.jpg"
 
 // FANCY FONT CONVERTER - ALL REPLIES USE THIS
 function fancy(text) {
