@@ -1,41 +1,24 @@
 require('dotenv').config()
-const {
-    default: makeWASocket,
-    useMultiFileAuthState,
-    DisconnectReason,
-    fetchLatestBaileysVersion,
-    makeCacheableSignalKeyStore,
-    jidNormalizedUser,
-    Browsers,
-    delay,
-    downloadContentFromMessage
-} = require('@whiskeysockets/baileys')
+const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser, Browsers, delay, downloadContentFromMessage, downloadMediaMessage } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const pino = require('pino')
 const express = require('express')
 const path = require('path')
 const chalk = require('chalk')
-
 const config = require('./config')
 const { isOwner, isGroup, runtime } = require('./lib/functions')
-
 const app = express()
 let sock = null
 let isConnecting = false
-
 const MENU_PIC = "https://files.catbox.moe/hhafg3.jpg"
+const groupCache = new Map()
 
-// FANCY FONT CONVERTER - ALL REPLIES USE THIS
-function fancy(text) {
-    const map = {
-        'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ',
-        'A':'ᴀ','B':'ʙ','C':'ᴄ','D':'ᴅ','E':'ᴇ','F':'ғ','G':'ɢ','H':'ʜ','I':'ɪ','J':'ᴊ','K':'ᴋ','L':'ʟ','M':'ᴍ','N':'ɴ','O':'ᴏ','P':'ᴘ','Q':'ǫ','R':'ʀ','S':'ꜱ','T':'ᴛ','U':'ᴜ','V':'ᴠ','W':'ᴡ','X':'x','Y':'ʏ','Z':'ᴢ',
-        '0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9'
-    }
-    return text.split('').map(c => map[c] || c).join('')
-}
+// FAST FANCY
+const fMap = { 'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ','A':'ᴀ','B':'ʙ','C':'ᴄ','D':'ᴅ','E':'ᴇ','F':'ғ','G':'ɢ','H':'ʜ','I':'ɪ','J':'ᴊ','K':'ᴋ','L':'ʟ','M':'ᴍ','N':'ɴ','O':'ᴏ','P':'ᴘ','Q':'ǫ','R':'ʀ','S':'ꜱ','T':'ᴛ','U':'ᴜ','V':'ᴠ','W':'ᴡ','X':'x','Y':'ʏ','Z':'ᴢ','0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9' }
+const fCache = new Map()
+function fancy(t){ if(fCache.has(t)) return fCache.get(t); let r=''; for(let c of t) r+=fMap[c]||c; if(fCache.size>500) fCache.clear(); fCache.set(t,r); return r }
 
-// NEW MENU YOU GAVE ME - EXACTLY
+// YOUR ORIGINAL MENU - EXACTLY AS IT IS
 const BOT_MENU = `┌ ─ 〔 ＣＲＡＳＨＥＲ ＭＤ 〕
 │ ${fancy('Creator')} ϟ CRASHER
 │ ${fancy('Bot Name')} ϟ CRASHER MD
@@ -186,9 +169,8 @@ app.get('/pair', async (req, res) => {
     const number = (req.query.number || '').replace(/\D/g, '')
     if (!number || number.length < 10) return res.json({ error: 'Invalid number' })
     if (!sock) return res.json({ error: 'Bot not started yet' })
-    if (sock.authState.creds.registered) return res.json({ error: 'Already linked' })
     try {
-        if (isConnecting) await delay(3000)
+        if (sock.authState.creds.registered) return res.json({ error: 'Already linked' })
         const code = await sock.requestPairingCode(number)
         const formatted = code?.match(/.{1,4}/g)?.join('-') || code
         res.json({ code: formatted })
@@ -200,33 +182,16 @@ async function startCrasher() {
     if (isConnecting) return; isConnecting = true
     const { state, saveCreds } = await useMultiFileAuthState(config.sessionDir)
     const { version } = await fetchLatestBaileysVersion()
-    const msgRetryCounterCache = new Map()
     sock = makeWASocket({
-        version, 
-        logger: pino({ level: 'silent' }), 
-        printQRInTerminal: false,
+        version, logger: pino({ level: 'silent' }), printQRInTerminal: false,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) },
-        // STEALTH - NO CHROME, NO ONLINE
-        browser: Browsers.macOS('Firefox'), 
-        markOnlineOnConnect: false,
-        syncFullHistory: false,
-        msgRetryCounterCache,
-        // FIX WAITING FOR THIS MESSAGE
-        getMessage: async (key) => { return undefined },
-        shouldSyncHistoryMessage: () => false,
-        // FAST
-        fireInitQueries: false,
-        shouldIgnoreJid: jid => false,
+        browser: Browsers.macOS('Chrome'), markOnlineOnConnect: false, syncFullHistory: false,
+        fireInitQueries: true, getMessage: async () => undefined, shouldSyncHistoryMessage: () => false,
     })
     sock.ev.on('creds.update', saveCreds)
     sock.ev.on('connection.update', async (u) => {
         const { connection, lastDisconnect } = u
-        if (connection === 'open') { 
-            isConnecting = false; 
-            console.log(chalk.green('✅ Connected - STEALTH MODE'))
-            // STAY OFFLINE - LAST SEEN ONLY
-            try { await sock.sendPresenceUpdate('unavailable') } catch {}
-        }
+        if (connection === 'open') { isConnecting = false; console.log(chalk.green('✅ Connected')); try { await sock.sendPresenceUpdate('unavailable') } catch {} }
         if (connection === 'close') {
             isConnecting = false
             const code = lastDisconnect?.error instanceof Boom ? lastDisconnect.error.output?.statusCode : 0
@@ -245,13 +210,7 @@ async function handleMessage(m) {
     const rawBody = (m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || '')
     const body = rawBody.trim()
     if (!body) return
-
-    if (global.db.auto.autoreact === true) {
-        const emojis = ['❤️','🔥','😂','😍','🥰','😎','🤖','🐺','⚡','👑','💯']
-        const random = emojis[Math.floor(Math.random()*emojis.length)]
-        try { await sock.sendMessage(m.key.remoteJid, { react: { text: random, key: m.key } }) } catch {}
-    }
-
+    if (global.db.auto.autoreact) { try { await sock.sendMessage(m.key.remoteJid, { react: { text: ['❤️','🔥','😂'][Math.floor(Math.random()*3)], key: m.key } }) } catch {} }
     if (!body.startsWith(config.prefix)) return
     const args = body.slice(config.prefix.length).trim().split(/ +/)
     const command = args.shift().toLowerCase()
@@ -259,57 +218,27 @@ async function handleMessage(m) {
     const from = m.key.remoteJid
     const sender = m.key.participant || from
     const isGroupChat = isGroup(from)
-    const owner = isOwner(sender)
-
-    // FAST REACTION SYSTEM - ⏳ RUNNING
-    const doReact = async (emoji) => { try { await sock.sendMessage(from, { react: { text: emoji, key: m.key } }) } catch {} }
-    await doReact('⏳')
-
-    let participants = [], isAdmin = false, isBotAdmin = false, groupMetadata = null
+    const owner = isOwner(sender) || m.key.fromMe
+    const doReact = (e) => { sock.sendMessage(from, { react: { text: e, key: m.key } }).catch(()=>{}) }
+    doReact('⏳')
+    let isAdmin = false, isBotAdmin = false, groupMetadata = null
     if (isGroupChat) {
         try {
-            groupMetadata = await sock.groupMetadata(from)
-            participants = groupMetadata.participants || []
-            const botId = sock.user.id.split(':')[0] + '@s.whatsapp.net'
-            const botJid = jidNormalizedUser(botId)
+            if(groupCache.has(from) && Date.now() - groupCache.get(from).time < 60000) groupMetadata = groupCache.get(from).data
+            else { groupMetadata = await sock.groupMetadata(from); groupCache.set(from, { data: groupMetadata, time: Date.now() }) }
+            const botId = jidNormalizedUser(sock.user.id)
             const senderJid = jidNormalizedUser(sender)
-            for (let p of participants) {
-                const pid = jidNormalizedUser(p.id)
-                const isPAdmin = p.admin === 'admin' || p.admin === 'superadmin' || p.admin === true
-                if (isPAdmin && pid === botJid) isBotAdmin = true
-                if (isPAdmin && pid === senderJid) isAdmin = true
-            }
-            if (owner) isAdmin = true
-        } catch (e) {}
+            for (let p of groupMetadata.participants) { if(!p.admin) continue; const pid = jidNormalizedUser(p.id); if(pid===botId) isBotAdmin=true; if(pid===senderJid) isAdmin=true }
+            if(owner) isAdmin=true
+        } catch {}
     }
-
-    // FANCY REPLY - ALL TEXT IN FANCY FONT
-    const reply = async (teks) => {
-        await doReact('💀') // WORKING
-        try { 
-            await sock.sendMessage(from, { text: fancy(teks) }, { quoted: m }) 
-        } catch { 
-            await sock.sendMessage(from, { text: fancy(teks) }) 
-        }
-        await doReact('✅') // COMPLETE
-    }
-    const sendImage = async (caption, url = MENU_PIC) => {
-        await doReact('💀')
-        try { 
-            await sock.sendMessage(from, { image: { url }, caption: caption }, { quoted: m }) 
-        } catch (e) {
-            await sock.sendMessage(from, { text: caption }, { quoted: m })
-        }
-        await doReact('✅')
-    }
-
+    const reply = async (teks) => { doReact('💀'); const f=fancy(teks); try{await sock.sendMessage(from,{text:f},{quoted:m})}catch{await sock.sendMessage(from,{text:f}).catch(()=>{})}; doReact('✅') }
+    const sendImage = async (cap, url=MENU_PIC) => { doReact('💀'); try{await sock.sendMessage(from,{image:{url},caption:cap},{quoted:m})}catch{await sock.sendMessage(from,{text:cap},{quoted:m}).catch(()=>{})}; doReact('✅') }
     const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage
-    const ownerOnly = async () => { if (!owner) { await reply('👑 Owner only!'); return true } return false }
-    const groupOnly = async () => { if (!isGroupChat) { await reply('👥 Group only!'); return true } return false }
-    const adminOnly = async () => { if (!isAdmin && !owner) { await reply('🛡️ Admin only!'); return true } return false }
-    const botAdmin = async () => { if (!isBotAdmin) { await reply('Bot must be admin!'); return true } return false }
-        if(!global.gcProtect) global.gcProtect={}; if(!global.gcWarn) global.gcWarn={}; let warnKick=async(chat,user,limit,type)=>{if(!global.gcWarn[chat])global.gcWarn[chat]={};if(!global.gcWarn[chat][user])global.gcWarn[chat][user]={};if(!global.gcWarn[chat][user][type])global.gcWarn[chat][user][type]=0;global.gcWarn[chat][user][type]++;let c=global.gcWarn[chat][user][type];if(c>=limit){try{await sock.sendMessage(chat,{text:"🚫 @"+user.split('@')[0]+" KICKED - "+c+"/"+limit+" "+type,mentions:[user]});}catch{}try{await sock.groupParticipantsUpdate(chat,[user],'remove');}catch{}delete global.gcWarn[chat][user][type];}else{try{await sock.sendMessage(chat,{text:"⚠️ @"+user.split('@')[0]+" WARN "+c+"/"+limit+" - No "+type,mentions:[user]});}catch{}}}; if(!global.gcProtect[from]) global.gcProtect[from]={antilink:true,antimention:true,antistatus:true,antibot:true}; if(body.toLowerCase().startsWith(config.prefix+'antilink')){if(!isGroupChat)return;let a=(args[0]||'').toLowerCase();if(!global.gcProtect[from])global.gcProtect[from]={};if(a==='on')global.gcProtect[from].antilink=true;else if(a==='off')global.gcProtect[from].antilink=false;else global.gcProtect[from].antilink=!global.gcProtect[from].antilink;await reply("🔗 Antilink "+(global.gcProtect[from].antilink?"ON ✅":"OFF ❌")+" - 5 warn kick");return;} if(body.toLowerCase().startsWith(config.prefix+'antigmention')||body.toLowerCase().startsWith(config.prefix+'antimention')||body.toLowerCase().startsWith(config.prefix+'antigcmention')){if(!isGroupChat)return;let a=(args[0]||'').toLowerCase();if(!global.gcProtect[from])global.gcProtect[from]={};if(a==='on')global.gcProtect[from].antimention=true;else if(a==='off')global.gcProtect[from].antimention=false;else global.gcProtect[from].antimention=!global.gcProtect[from].antimention;await reply("👥 AntiGmention "+(global.gcProtect[from].antimention?"ON ✅":"OFF ❌")+" - 2 warn kick");return;} if(body.toLowerCase().startsWith(config.prefix+'antigcstatus')||body.toLowerCase().startsWith(config.prefix+'antistatus')){if(!isGroupChat)return;let a=(args[0]||'').toLowerCase();if(!global.gcProtect[from])global.gcProtect[from]={};if(a==='on')global.gcProtect[from].antistatus=true;else if(a==='off')global.gcProtect[from].antistatus=false;else global.gcProtect[from].antistatus=!global.gcProtect[from].antistatus;await reply("📢 AntiGCStatus "+(global.gcProtect[from].antistatus?"ON ✅":"OFF ❌")+" - 1 warn kick");return;} if(body.toLowerCase().startsWith(config.prefix+'antibot')){if(!isGroupChat)return;let a=(args[0]||'').toLowerCase();if(!global.gcProtect[from])global.gcProtect[from]={};if(a==='on')global.gcProtect[from].antibot=true;else if(a==='off')global.gcProtect[from].antibot=false;else global.gcProtect[from].antibot=!global.gcProtect[from].antibot;await reply("🤖 AntiBot "+(global.gcProtect[from].antibot?"ON ✅":"OFF ❌")+" - 2 warn kick");return;} if(global.gcProtect?.[from]?.antilink&&/(https?:\/\/|www\.|chat\.whatsapp\.com|wa\.me|t\.me|bit\.ly|\.com|\.net|\.org|\.xyz|\.link)/i.test(body)&&isGroupChat&&!isAdmin&&isBotAdmin){try{await sock.sendMessage(from,{delete:m.key});}catch{}await warnKick(from,sender,5,'antilink');return;} if(global.gcProtect?.[from]?.antimention&&(m.message?.extendedTextMessage?.contextInfo?.mentionedJid||[]).length>=4&&isGroupChat&&!isAdmin&&isBotAdmin){try{await sock.sendMessage(from,{delete:m.key});}catch{}await warnKick(from,sender,2,'antigmention');return;} if(global.gcProtect?.[from]?.antistatus&&m.message?.extendedTextMessage?.contextInfo?.isForwarded&&isGroupChat&&!isAdmin&&isBotAdmin){try{await sock.sendMessage(from,{delete:m.key});}catch{}await warnKick(from,sender,1,'antigcstatus');return;} if(global.gcProtect?.[from]?.antibot&&m.message?.key?.id?.startsWith('3EB0')&&isGroupChat&&!isAdmin&&isBotAdmin){try{await sock.sendMessage(from,{delete:m.key});}catch{}await warnKick(from,sender,2,'antibot');return;}
+
+    // YOUR CASES CONTINUE FROM HERE
     switch(command){
+        
         case 'menu': case 'help': return await sendImage(BOT_MENU)
         case 'ping': return await reply(`🏓 Pong! ${Date.now() - m.messageTimestamp*1000}ms\n⏱️ Runtime: ${runtime(process.uptime())}`)
         case 'alive': return await sendImage(`🐺 ${fancy('CRASHER MD ALIVE')}\n⚡ ${fancy('Power Speed Control')}\n⏱️ ${runtime(process.uptime())}`)
