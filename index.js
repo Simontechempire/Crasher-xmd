@@ -366,9 +366,11 @@ async function handleMessage(m) {
         case 'play': case 'song': if(!text) return await reply('Give song name'); return await reply(`🎵 Searching YT: ${text}`)
         case 'video': if(!text) return await reply('Give YT link'); return await reply(`🎬 Video: ${text}`)
         case 'tiktok': if(!text) return await reply('Give TikTok link'); return await reply(`TikTok: ${text}`)
-                case 'instagram': if(!text) return await reply('Give IG link'); return await reply(`IG: ${text}`)
+        case 'instagram': if(!text) return await reply('Give IG link'); return await reply(`IG: ${text}`)
         case 'facebook': if(!text) return await reply('Give FB link'); return await reply(`FB: ${text}`)
         case 'mediafire': if(!text) return await reply('Give MediaFire link'); return await reply(`MediaFire: ${text}`)
+        case 'protection': {
+        case 'protection':{if(!isGroupChat)return reply('❌ Group only');if(!global.gcProtect)global.gcProtect={};if(!global.gcProtect[from])global.gcProtect[from]={antilink:true,antimention:true,antistatus:true,antibot:true};let a=(args[0]||'').toLowerCase();if(a==='on'){global.gcProtect[from]={antilink:true,antimention:true,antistatus:true,antibot:true};return reply('🛡️ ALL PROTECTION ON ✅');}if(a==='off'){global.gcProtect[from]={antilink:false,antimention:false,antistatus:false,antibot:false};return reply('🛡️ ALL PROTECTION OFF ❌');}return reply(`🛡️ Current: Antilink ${global.gcProtect[from].antilink?'ON ✅':'OFF ❌'} | Use: .protection on/off`);}
         case 'apk': if(!text) return await reply('Give app name'); return await reply(`APK: ${text}`)
         case 'pinterest': if(!text) return await reply('Give query'); return await sendImage(`Pinterest: ${text}`, `https://picsum.photos/600/400?random=${Date.now()}`)
         case 'github': if(!text) return await reply('Give github link'); return await reply(`GitHub: ${text}`)
