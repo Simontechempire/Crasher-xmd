@@ -1,4 +1,5 @@
 require('dotenv').config()
+const fetch = (...args) => import('node-fetch').then(({default: f}) => f(...args));
 const { default: makeWASocket, useMultiFileAuthState, DisconnectReason, fetchLatestBaileysVersion, makeCacheableSignalKeyStore, jidNormalizedUser, Browsers, delay, downloadContentFromMessage, downloadMediaMessage } = require('@whiskeysockets/baileys')
 const { Boom } = require('@hapi/boom')
 const pino = require('pino')
@@ -197,7 +198,7 @@ async function startCrasher() {
         logger: pino({ level: 'silent' }),
         printQRInTerminal: false,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) },
-        browser: Browsers.ubuntu('Chrome'), // FIXED - MACOS FAILS ON HOSTING
+        browser: Browsers.ubuntu('Chrome'),
         markOnlineOnConnect: false,
         syncFullHistory: false,
         fireInitQueries: false,
