@@ -13,12 +13,10 @@ let isConnecting = false
 const MENU_PIC = "https://files.catbox.moe/hhafg3.jpg"
 const groupCache = new Map()
 
-// FAST FANCY
-const fMap = { 'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ','A':'ᴀ','B':'ʙ','C':'ᴄ','D':'ᴅ','E':'ᴇ','F':'ғ','G':'ɢ','H':'ʜ','I':'ɪ','J':'ᴊ','K':'ᴋ','L':'ʟ','M':'ᴍ','N':'ɴ','O':'ᴏ','P':'ᴘ','Q':'ǫ','R':'ʀ','S':'ꜱ','T':'ᴛ','U':'ᴜ','V':'ᴠ','W':'ᴡ','X':'x','Y':'ʏ','Z':'ᴢ','0':'0','1':'1','2':'2','3':'3','4':'4','5':'5','6':'6','7':'7','8':'8','9':'9' }
+const fMap = { 'a':'ᴀ','b':'ʙ','c':'ᴄ','d':'ᴅ','e':'ᴇ','f':'ғ','g':'ɢ','h':'ʜ','i':'ɪ','j':'ᴊ','k':'ᴋ','l':'ʟ','m':'ᴍ','n':'ɴ','o':'ᴏ','p':'ᴘ','q':'ǫ','r':'ʀ','s':'ꜱ','t':'ᴛ','u':'ᴜ','v':'ᴠ','w':'ᴡ','x':'x','y':'ʏ','z':'ᴢ','A':'ᴀ','B':'ʙ','C':'ᴄ','D':'ᴅ','E':'ᴇ','F':'ғ','G':'ɢ','H':'ʜ','I':'ɪ','J':'ᴊ','K':'ᴋ','L':'ʟ','M':'ᴍ','N':'ɴ','O':'ᴏ','P':'ᴘ','Q':'ǫ','R':'ʀ','S':'ꜱ','T':'ᴛ','U':'ᴜ','V':'ᴠ','W':'ᴡ','X':'x','Y':'ʏ','Z':'ᴢ' }
 const fCache = new Map()
 function fancy(t){ if(fCache.has(t)) return fCache.get(t); let r=''; for(let c of t) r+=fMap[c]||c; if(fCache.size>500) fCache.clear(); fCache.set(t,r); return r }
 
-// YOUR ORIGINAL MENU - EXACTLY AS IT IS
 const BOT_MENU = `┌ ─ 〔 ＣＲＡＳＨＥＲ ＭＤ 〕
 │ ${fancy('Creator')} ϟ CRASHER
 │ ${fancy('Bot Name')} ϟ CRASHER MD
@@ -165,16 +163,27 @@ async function downloadMedia(msg, type) {
 
 app.use(express.static(path.join(__dirname, 'public')))
 app.get('/', (req, res) => res.sendFile(path.join(__dirname, 'public', 'index.html')))
+
+// FIXED PAIR - NO MORE LONG LOGGING
 app.get('/pair', async (req, res) => {
     const number = (req.query.number || '').replace(/\D/g, '')
-    if (!number || number.length < 10) return res.json({ error: 'Invalid number' })
-    if (!sock) return res.json({ error: 'Bot not started yet' })
+    if (!number || number.length < 10) return res.json({ error: 'Invalid number, use country code e.g 234...' })
+    if (!sock) {
+        await delay(2000)
+        if (!sock) return res.json({ error: 'Bot starting, try again in 5 sec' })
+    }
+    if (sock.authState.creds.registered) return res.json({ error: 'Already linked, delete session' })
     try {
-        if (sock.authState.creds.registered) return res.json({ error: 'Already linked' })
-        const code = await sock.requestPairingCode(number)
-        const formatted = code?.match(/.{1,4}/g)?.join('-') || code
-        res.json({ code: formatted })
-    } catch (err) { res.json({ error: err.message }) }
+        console.log(chalk.yellow(`[PAIR] Request for ${number}`))
+        await delay(1500)
+        let code = await sock.requestPairingCode(number)
+        code = code?.match(/.{1,4}/g)?.join('-') || code
+        console.log(chalk.green(`[PAIR] CODE: ${code}`))
+        res.json({ code })
+    } catch (err) {
+        console.log(chalk.red('[PAIR FAIL]'), err.message)
+        res.json({ error: err.message })
+    }
 })
 app.listen(process.env.PORT || config.port || 3000, () => console.log(chalk.cyan('[WEB] Ready')))
 
@@ -182,19 +191,33 @@ async function startCrasher() {
     if (isConnecting) return; isConnecting = true
     const { state, saveCreds } = await useMultiFileAuthState(config.sessionDir)
     const { version } = await fetchLatestBaileysVersion()
+    console.log(chalk.cyan(`[VERSION] ${version.join('.')}`))
     sock = makeWASocket({
-        version, logger: pino({ level: 'silent' }), printQRInTerminal: false,
+        version,
+        logger: pino({ level: 'silent' }),
+        printQRInTerminal: false,
         auth: { creds: state.creds, keys: makeCacheableSignalKeyStore(state.keys, pino({ level: 'silent' })) },
-        browser: Browsers.macOS('Chrome'), markOnlineOnConnect: false, syncFullHistory: false,
-        fireInitQueries: true, getMessage: async () => undefined, shouldSyncHistoryMessage: () => false,
+        browser: Browsers.ubuntu('Chrome'), // FIXED - MACOS FAILS ON HOSTING
+        markOnlineOnConnect: false,
+        syncFullHistory: false,
+        fireInitQueries: false,
+        getMessage: async () => undefined,
+        shouldSyncHistoryMessage: () => false,
+        connectTimeoutMs: 60000,
+        keepAliveIntervalMs: 10000,
     })
     sock.ev.on('creds.update', saveCreds)
     sock.ev.on('connection.update', async (u) => {
         const { connection, lastDisconnect } = u
-        if (connection === 'open') { isConnecting = false; console.log(chalk.green('✅ Connected')); try { await sock.sendPresenceUpdate('unavailable') } catch {} }
+        if (connection === 'open') {
+            isConnecting = false
+            console.log(chalk.green('✅ CONNECTED - BOT ONLINE'))
+            try { await sock.sendPresenceUpdate('unavailable') } catch {}
+        }
         if (connection === 'close') {
             isConnecting = false
             const code = lastDisconnect?.error instanceof Boom ? lastDisconnect.error.output?.statusCode : 0
+            console.log(chalk.red(`[CLOSE] ${code}`))
             if (code !== DisconnectReason.loggedOut) { await delay(3000); startCrasher() }
         }
     })
@@ -210,7 +233,7 @@ async function handleMessage(m) {
     const rawBody = (m.message.conversation || m.message.extendedTextMessage?.text || m.message.imageMessage?.caption || m.message.videoMessage?.caption || '')
     const body = rawBody.trim()
     if (!body) return
-    if (global.db.auto.autoreact) { try { await sock.sendMessage(m.key.remoteJid, { react: { text: ['❤️','🔥','😂'][Math.floor(Math.random()*3)], key: m.key } }) } catch {} }
+    if (global.db.auto.autoreact) { try { await sock.sendMessage(m.key.remoteJid, { react: { text: ['❤️','🔥','🐺'][Math.floor(Math.random()*3)], key: m.key } }) } catch {} }
     if (!body.startsWith(config.prefix)) return
     const args = body.slice(config.prefix.length).trim().split(/ +/)
     const command = args.shift().toLowerCase()
@@ -221,14 +244,15 @@ async function handleMessage(m) {
     const owner = isOwner(sender) || m.key.fromMe
     const doReact = (e) => { sock.sendMessage(from, { react: { text: e, key: m.key } }).catch(()=>{}) }
     doReact('⏳')
-    let isAdmin = false, isBotAdmin = false, groupMetadata = null
+    let isAdmin = false, isBotAdmin = false
     if (isGroupChat) {
         try {
-            if(groupCache.has(from) && Date.now() - groupCache.get(from).time < 60000) groupMetadata = groupCache.get(from).data
-            else { groupMetadata = await sock.groupMetadata(from); groupCache.set(from, { data: groupMetadata, time: Date.now() }) }
+            let meta
+            if(groupCache.has(from) && Date.now() - groupCache.get(from).time < 60000) meta = groupCache.get(from).data
+            else { meta = await sock.groupMetadata(from); groupCache.set(from, { data: meta, time: Date.now() }) }
             const botId = jidNormalizedUser(sock.user.id)
             const senderJid = jidNormalizedUser(sender)
-            for (let p of groupMetadata.participants) { if(!p.admin) continue; const pid = jidNormalizedUser(p.id); if(pid===botId) isBotAdmin=true; if(pid===senderJid) isAdmin=true }
+            for (let p of meta.participants) { if(!p.admin) continue; const pid = jidNormalizedUser(p.id); if(pid===botId) isBotAdmin=true; if(pid===senderJid) isAdmin=true }
             if(owner) isAdmin=true
         } catch {}
     }
@@ -236,7 +260,6 @@ async function handleMessage(m) {
     const sendImage = async (cap, url=MENU_PIC) => { doReact('💀'); try{await sock.sendMessage(from,{image:{url},caption:cap},{quoted:m})}catch{await sock.sendMessage(from,{text:cap},{quoted:m}).catch(()=>{})}; doReact('✅') }
     const quoted = m.message.extendedTextMessage?.contextInfo?.quotedMessage
 
-    // YOUR CASES CONTINUE FROM HERE
     switch(command){
         
         case 'menu': case 'help': return await sendImage(BOT_MENU)
