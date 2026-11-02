@@ -2,61 +2,144 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>ＣＲＡＳＨＥＲ ＭＤ - Pair</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>CRASHER MD - Pair Code</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;700&family=Orbitron:wght@700&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{background:#000;color:#fff;font-family:monospace;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:20px}
-.container{border:1px solid #fff;border-radius:20px;padding:30px;width:100%;max-width:400px;text-align:center;box-shadow:0 0 20px rgba(255,255,255,0.2)}
-h1{font-size:22px;letter-spacing:3px;margin-bottom:10px}
-h3{font-size:14px;color:#aaa;margin-bottom:20px}
-.box{margin-top:20px}
-input{padding:14px;width:100%;border-radius:10px;border:none;outline:none;background:#111;color:#fff;border:1px solid #333;text-align:center;font-size:16px}
-button{padding:14px;width:100%;margin-top:15px;background:#fff;color:#000;border:none;border-radius:10px;font-weight:bold;font-size:16px;cursor:pointer;transition:0.3s}
-button:hover{background:#ccc}
-#code{font-size:26px;margin-top:20px;letter-spacing:6px;color:#0f0;font-weight:bold;min-height:40px}
-#status{margin-top:10px;color:#888;font-size:13px}
-.footer{margin-top:25px;font-size:12px;color:#666}
-.power{color:#fff;font-weight:bold}
+:root{--neon:#00ff88;--dim:#111;--border:#222}
+body{background:#000;color:#fff;font-family:'JetBrains Mono',monospace;display:flex;justify-content:center;align-items:center;min-height:100vh;padding:16px;overflow:hidden}
+body::before{content:"";position:fixed;inset:0;background:radial-gradient(circle at 50% -20%, #0a1f14 0%, #000 60%);z-index:-1}
+.container{width:100%;max-width:380px;background:rgba(10,10,10,0.9);border:1px solid var(--border);border-radius:24px;padding:28px 24px;backdrop-filter:blur(20px);box-shadow:0 0 0 1px #ffffff0a, 0 0 40px rgba(0,255,136,0.08), inset 0 1px 0 rgba(255,255,255,0.05);animation:floatIn .6s ease}
+@keyframes floatIn{from{opacity:0;transform:translateY(20px) scale(.98)}to{opacity:1;transform:translateY(0) scale(1)}}
+.header{text-align:center;margin-bottom:22px}
+.logo{font-family:'Orbitron',monospace;font-size:18px;letter-spacing:6px;font-weight:700;background:linear-gradient(90deg,#fff,#aaa);-webkit-background-clip:text;-webkit-text-fill-color:transparent;margin-bottom:6px}
+.badge{display:inline-block;font-size:10px;letter-spacing:2px;padding:4px 10px;border-radius:100px;background:#00ff8820;color:var(--neon);border:1px solid #00ff8840;margin-top:8px}
+.tagline{font-size:11px;color:#666;margin-top:12px;letter-spacing:1px}
+.box{margin-top:10px}
+.input-wrap{position:relative}
+.input-wrap span{position:absolute;left:14px;top:50%;transform:translateY(-50%);color:#555;font-size:14px}
+input{width:100%;padding:15px 14px 15px 38px;border-radius:14px;border:1px solid var(--border);outline:none;background:#0e0e0e;color:#fff;font-family:'JetBrains Mono',monospace;font-size:15px;transition:.2s}
+input:focus{border-color:var(--neon);box-shadow:0 0 0 3px #00ff8820;background:#111}
+input::placeholder{color:#444}
+button{width:100%;margin-top:14px;padding:15px;border-radius:14px;border:none;background:#fff;color:#000;font-family:'Orbitron',monospace;font-weight:700;font-size:13px;letter-spacing:2px;cursor:pointer;transition:.2s;position:relative;overflow:hidden}
+button:active{transform:scale(.98)}
+button.loading{pointer-events:none;opacity:.7}
+button::after{content:"";position:absolute;inset:0;background:linear-gradient(90deg,transparent,rgba(0,0,0,.1),transparent);transform:translateX(-100%);transition:.6s}
+button:hover::after{transform:translateX(100%)}
+.code-box{margin-top:20px;min-height:72px;background:#080808;border:1px dashed #222;border-radius:16px;display:flex;align-items:center;justify-content:center;position:relative;transition:.3s}
+.code-box.has-code{border-style:solid;border-color:var(--neon);background:#00ff880a;box-shadow:0 0 20px #00ff8815}
+#code{font-family:'Orbitron',monospace;font-size:28px;letter-spacing:8px;font-weight:700;color:var(--neon);text-shadow:0 0 20px #00ff8855}
+#status{margin-top:12px;font-size:11px;line-height:1.5;text-align:center;color:#888;min-height:32px}
+#status.ok{color:var(--neon)}
+#status.err{color:#ff4d4d}
+.copy-btn{position:absolute;right:8px;top:8px;font-size:10px;padding:6px 10px;border-radius:8px;background:#1a1a1a;color:#fff;border:1px solid #222;cursor:pointer;display:none}
+.code-box.has-code .copy-btn{display:block}
+.footer{margin-top:22px;text-align:center;border-top:1px solid #111;padding-top:16px}
+.footer p{font-size:10px;color:#444;line-height:1.6;letter-spacing:.5px}
+.power{color:#666;font-weight:700}
+.dots{display:flex;gap:4px;justify-content:center;margin-top:14px}
+.dots i{width:3px;height:3px;background:#222;border-radius:50%;display:block;animation:blink 1.4s infinite}
+.dots i:nth-child(2){animation-delay:.2s}
+.dots i:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,100%{opacity:.2}50%{opacity:1;background:var(--neon)}}
 </style>
 </head>
 <body>
 <div class="container">
-<h1>◈┈▉ ＣＲＡＳＨＥＲ ＭＤ ▉┄◈</h1>
-<h3>PAIRING SITE - GET CODE</h3>
-<p>⚡ Power • Speed • Control</p>
-<div class="box">
-<input id="num" type="text" placeholder="2348071569915" />
-<button onclick="getCode()">GET PAIR CODE</button>
-<div id="code"></div>
-<div id="status"></div>
+  <div class="header">
+    <div class="logo">CRASHER MD</div>
+    <div class="badge">⚡ PAIRING SYSTEM V3</div>
+    <div class="tagline">POWER • SPEED • CONTROL • UNSTOPPABLE</div>
+  </div>
+
+  <div class="box">
+    <div class="input-wrap">
+      <span>+</span>
+      <input id="num" type="tel" inputmode="numeric" placeholder="2348071569915" autocomplete="off" maxlength="15" />
+    </div>
+    <button id="btn" onclick="getCode()">GET PAIR CODE</button>
+
+    <div class="code-box" id="codeBox">
+      <div id="code"></div>
+      <button class="copy-btn" id="copyBtn" onclick="copyCode()">COPY</button>
+    </div>
+    <div id="status">Enter number with country code<br>No + No spaces - e.g 23480...</div>
+  </div>
+
+  <div class="dots"><i></i><i></i><i></i></div>
+
+  <div class="footer">
+    <p><span class="power">CRASHER ƠƬ MD © 2026</span><br>Use 8-digit code in WhatsApp > Linked Devices > Link with phone number<br>Code expires in 60 seconds</p>
+  </div>
 </div>
-<div class="footer">
-<p><span class="power">CRASHER MD — 2026</span><br>Enter number without + and get 8-digit code</p>
-</div>
-</div>
+
 <script>
+const numEl = document.getElementById('num');
+const codeEl = document.getElementById('code');
+const statusEl = document.getElementById('status');
+const codeBox = document.getElementById('codeBox');
+const btn = document.getElementById('btn');
+const copyBtn = document.getElementById('copyBtn');
+
+numEl.addEventListener('input', () => {
+  numEl.value = numEl.value.replace(/[^0-9]/g,'');
+});
+
 async function getCode(){
-  const num = document.getElementById('num').value.trim();
-  const codeEl = document.getElementById('code');
-  const statusEl = document.getElementById('status');
-  if(!num){ statusEl.innerText = "Enter number"; return; }
-  codeEl.innerText = "...";
-  statusEl.innerText = "Generating code... wait";
+  let num = numEl.value.trim().replace(/[^0-9]/g,'');
+  if(!num || num.length < 10){ showStatus("❌ Enter valid number with country code", "err"); shake(); return; }
+  
+  btn.classList.add('loading');
+  btn.innerText = "GENERATING...";
+  codeEl.innerText = "•••";
+  codeBox.classList.remove('has-code');
+  showStatus("⏳ Connecting to CRASHER server... wait 5 sec", "");
+
   try {
-    const res = await fetch('/pair?number='+encodeURIComponent(num));
+    const res = await fetch('/pair?number='+encodeURIComponent(num), { cache: 'no-store' });
     const data = await res.json();
     if(data.code){
+      let formatted = data.code.replace(/-/g,'').replace(/(.{4})/g,'$1 ').trim();
       codeEl.innerText = data.code;
-      statusEl.innerText = "✅ Copy code & paste in WhatsApp > Linked Devices > Link with phone number";
+      codeBox.classList.add('has-code');
+      showStatus("✅ Code ready! Go to WhatsApp > Linked Devices > Link with phone number > Paste code. Expires in 60s", "ok");
+      // Auto copy
+      try{ await navigator.clipboard.writeText(data.code); }catch{}
     } else {
       codeEl.innerText = "";
-      statusEl.innerText = "❌ "+(data.error||"Failed");
+      codeBox.classList.remove('has-code');
+      showStatus("❌ "+(data.message||data.error||"Failed to generate. Try again"), "err");
     }
   } catch(e){
-    statusEl.innerText = "❌ Error: "+e.message;
+    codeEl.innerText = "";
+    showStatus("❌ Network error: "+e.message, "err");
+  } finally {
+    btn.classList.remove('loading');
+    btn.innerText = "GET PAIR CODE";
   }
 }
+
+function copyCode(){
+  let c = codeEl.innerText;
+  if(!c) return;
+  navigator.clipboard.writeText(c);
+  copyBtn.innerText = "COPIED!";
+  setTimeout(()=>copyBtn.innerText="COPY", 1500);
+}
+
+function showStatus(msg, type){
+  statusEl.className = type;
+  statusEl.innerHTML = msg;
+}
+
+function shake(){
+  const cont = document.querySelector('.container');
+  cont.animate([{transform:'translateX(0)'},{transform:'translateX(-6px)'},{transform:'translateX(6px)'},{transform:'translateX(0)'}],{duration:300});
+}
+
+// Enter key
+numEl.addEventListener('keydown', e => { if(e.key==='Enter') getCode(); });
 </script>
 </body>
-</html>
+        </html>
