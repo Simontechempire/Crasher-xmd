@@ -241,8 +241,10 @@ async function handleMessage(m) {
     const text = args.join(' ')
     const from = m.key.remoteJid
     const sender = m.key.participant || from
-    const isGroupChat = isGroup(from)
-    const owner = isOwner(sender) || m.key.fromMe
+    let isGroupChat = false
+    try { isGroupChat = isGroup(from) } catch { isGroupChat = from.endsWith('@g.us') }
+    let owner = false
+    try { owner = isOwner(sender) || m.key.fromMe } catch { owner = m.key.fromMe ? true : false }
     const doReact = (e) => { sock.sendMessage(from, { react: { text: e, key: m.key } }).catch(()=>{}) }
     doReact('⏳')
     let isAdmin = false, isBotAdmin = false
