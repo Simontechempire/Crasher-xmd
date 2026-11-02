@@ -435,11 +435,9 @@ case 'joke': { const j=["Why did the Nigerian student carry ladder to school? Be
 case 'quote': case 'qoutet': { const all=["Power comes in response to a need, not a desire - Goku","If you don’t take risks, you can’t create a future - Luffy","No guts, no glory.","Hustle in silence, let success make noise.","You had me at hello.","If I know what love is, it is because of you."]; return sock.sendMessage(from,{text:`✨ *RANDOM QUOTE*\n\n"${all[Math.floor(Math.random()*all.length)]}"`},{quoted:m}); }
 case 'meme': return sock.sendMessage(from,{image:{url:`https://picsum.photos/600/400?random=${Date.now()}`},caption:'Meme'},{quoted:m});
 case 'truth': { const a=["When last you","Who is","Have you ever","Do you","What is","How many times you"], b=["lied to your crush","cried because of love","stolen meat from pot","kissed someone","had crush on person in this group","stalked your ex"], c=["this week?","and why?","tell truth!","no lie!","be honest!"]; return sock.sendMessage(from,{text:`🤔 *RANDOM TRUTH:*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`.toUpperCase()},{quoted:m}); }
-case 'dare': { const a=["Send voice note shouting","Do video of you doing","Send pic of you","Text your crush","Post on status","Call your mom and say"], b=["I love you","20 pushups","with cloth inside out","'I am jobless'","'I stole meat'","a monkey"], c=["for 30sec","for 1 hour","and screenshot","with video proof","right now","for 24hrs"]; return sock.sendMessage(from,{text:`🎯 *RANDOM DARE:*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`.toUpperCase()},{quoted:m}); }
-break; }
+case 'dare': { const a=["Send voice note shouting","Do video of you doing","Send pic of you","Text your crush","Post on status","Call your mom and say"], b=["I love you","20 pushups","with cloth inside out","'I am jobless'","'I stole meat'","a monkey"], c=["for 30sec","for 1 hour","and screenshot","with video proof","right now","for 24hrs"]; await sock.sendMessage(from,{text:`🎯 *RANDOM DARE:*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`.toUpperCase()},{quoted:m}); break; }
         default: await doReact('❌'); return
     }
 }
 
 startCrasher()
-            
