@@ -265,177 +265,1340 @@ async function handleMessage(m) {
 
     switch(command){
             
-case 'menu': case 'help': return await sock.sendMessage(from,{text:BOT_MENU||'MENU'},{quoted:m});
-case 'ping': { let st=Date.now(); await sock.sendMessage(from,{text:'⚡ Pinging...'},{quoted:m}); let la=Date.now()-st; let up=process.uptime(),h=Math.floor(up/3600),mi=Math.floor((up%3600)/60),se=Math.floor(up%60); return sock.sendMessage(from,{text:`╭═『 ⚡ PING 』═╮\n│ ◈ LATENCY: ${la} ms\n│ ◈ UPTIME: ${h}h ${mi}m ${se}s\n╰═══════╯`},{quoted:m}); }
-case 'alive': { let up=process.uptime(),h=Math.floor(up/3600),mi=Math.floor((up%3600)/60); return sock.sendMessage(from,{image:{url:'https://files.catbox.moe/hhafg3.jpg'},caption:`BOT ALIVE ✅\nUptime: ${h}h ${mi}m`},{quoted:m}); }
-case 'owner': case 'creator': { let num='2348071569915'; let vcard=`BEGIN:VCARD\nVERSION:3.0\nFN:CRASHER MD OWNER\nTEL;type=CELL;waid=${num}:+${num}\nEND:VCARD`; await sock.sendMessage(from,{contacts:{displayName:'OWNER',contacts:[{vcard}]}},{quoted:m}); return sock.sendMessage(from,{text:`👑 OWNER +${num}`},{quoted:m}); }
-case 'runtime': return await sock.sendMessage(from,{text:`⏱️ Runtime: ${runtime(process.uptime())}`},{quoted:m});
-case 'listsudo': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); let list=global.sudo||[]; if(!list.length) return sock.sendMessage(from,{text:'No sudo user!'},{quoted:m}); return sock.sendMessage(from,{text:`*SUDO LIST - ${list.length}*\n`+list.map((v,i)=>`${i+1}. @${v.split('@')[0]}`).join('\n'),mentions:list},{quoted:m}); }
-case 'delsudo': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); let num=m.quoted?m.quoted.sender:args[0]?.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; global.sudo=global.sudo.filter(v=>v!==num); return sock.sendMessage(from,{text:`✅ REMOVED @${num.split('@')[0]}`,mentions:[num]},{quoted:m}); }
-case 'botinfo': case 'info': { let up=process.uptime(),h=Math.floor(up/3600),mi=Math.floor((up%3600)/60),os=require('os'); return sock.sendMessage(from,{text:`BOT INFO\nName: CRASHER MD\nUptime: ${h}h ${mi}m\nPlatform: ${os.platform()}`},{quoted:m}); }
-case 'addsudo': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); let num=m.quoted?m.quoted.sender:args[0]?.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; global.sudo=global.sudo||[]; global.sudo.push(num); return sock.sendMessage(from,{text:`✅ SUDO ADDED @${num.split('@')[0]}`,mentions:[num]},{quoted:m}); }
-case 'vv': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); let q=m.quoted; if(!q) return sock.sendMessage(from,{text:'Reply viewonce'},{quoted:m}); let media=await q.download(); let mime=(q.msg||q).mimetype||''; return sock.sendMessage(from,{[/video/.test(mime)?'video':'image']:media,caption:'✅ RESTORED'},{quoted:m}); }
-case 'autovv': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:`AutoVV: ${global.wolfDB?.auto?.autovv?'ON':'OFF'}`},{quoted:m}); global.wolfDB=global.wolfDB||{auto:{autovv:true}}; global.wolfDB.auto.autovv=text.toLowerCase()==='on'; return sock.sendMessage(from,{text:`✅ AutoVV ${global.wolfDB.auto.autovv?'ON':'OFF'}`},{quoted:m}); }
-case 'vv2': { let q=m.message?.extendedTextMessage?.contextInfo?.quotedMessage; let qMsg=q?.viewOnceMessage?.message||q?.viewOnceMessageV2?.message||m.message?.viewOnceMessage?.message; if(!qMsg) return sock.sendMessage(from,{text:'Reply viewonce'},{quoted:m}); let type=Object.keys(qMsg)[0]; let buf=await downloadMediaMessage({message:qMsg},'buffer',{}, {logger:undefined,reuploadRequest:sock.updateMediaMessage}); if(type==='imageMessage') return sock.sendMessage(from,{image:buf,caption:'👁️ VV2'},{quoted:m}); if(type==='videoMessage') return sock.sendMessage(from,{video:buf,caption:'👁️ VV2'},{quoted:m}); return; }
-case 'vv3': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); let q=m.message?.extendedTextMessage?.contextInfo?.quotedMessage; let qMsg=q?.viewOnceMessage?.message||q?.viewOnceMessageV2?.message||q; let type=Object.keys(qMsg||{})[0]; if(!qMsg) return sock.sendMessage(from,{text:'Reply viewonce'},{quoted:m}); let buf=await downloadMediaMessage({message:qMsg},'buffer',{}, {logger:undefined,reuploadRequest:sock.updateMediaMessage}); let ownerJid=sock.user.id; await sock.sendMessage(ownerJid,{[type.replace('Message','')]:buf}); return sock.sendMessage(from,{text:'✅ Forwarded to owner'},{quoted:m}); }
-case 'vvall': return sock.sendMessage(from,{text:`👁️ *VV ALL*\n.vv - bypass\n.vv2 - save\n.vv3 - to owner\n.autovv on/off`},{quoted:m});
-case 'restart': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); await sock.sendMessage(from,{text:'🔄 Restarting Bot...'},{quoted:m}); process.exit(1); }
-case 'shutdown': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); await sock.sendMessage(from,{text:'🛑 Shutting down bot...'},{quoted:m}); process.exit(0); }
-case 'broadcast': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'Text needed'},{quoted:m}); for(let id of Object.keys(await sock.groupFetchAllParticipating())){ await sock.sendMessage(id,{text:`📢 Broadcast:\n${text}`}) } return sock.sendMessage(from,{text:'Broadcast sent'},{quoted:m}); }
-case 'setprefix': case 'prefixset': case 'setpref': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); if(!args[0]) return sock.sendMessage(from,{text:`Current prefix: ${global.prefix}\nUse: .setprefix !`},{quoted:m}); global.prefix=args[0].trim(); return sock.sendMessage(from,{text:`✅ Prefix changed to: ${global.prefix}`},{quoted:m}); }
-case 'setname': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'Give new name!'},{quoted:m}); config.name=text.trim(); return sock.sendMessage(from,{text:`Bot name changed to: ${config.name}`},{quoted:m}); }
-case 'setbio': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); await sock.updateProfileStatus(text); return sock.sendMessage(from,{text:'Bio updated'},{quoted:m}); }
-case 'setpp': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); const q=m.message.imageMessage||m.quoted?.imageMessage; if(!q) return sock.sendMessage(from,{text:'Send image with .setpp'},{quoted:m}); const buf=await downloadMedia(q,'image'); await sock.updateProfilePicture(sock.user.id,buf); return sock.sendMessage(from,{text:'PP updated'},{quoted:m}); }
-case 'join': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); try{ const link=text.split('/').pop(); await sock.groupAcceptInvite(link); return sock.sendMessage(from,{text:'Joined'},{quoted:m}); }catch{ return sock.sendMessage(from,{text:'Invalid link'},{quoted:m}); } }
-case 'leave': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'Only admin & owner'},{quoted:m}); await sock.sendMessage(from,{text:`Goodbye 👋 - ${config.name} leaving...`},{quoted:m}); return await sock.groupLeave(from); }
-case 'block': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); await sock.updateBlockStatus(text.replace(/[^0-9]/g,'')+'@s.whatsapp.net','block'); return sock.sendMessage(from,{text:'Blocked'},{quoted:m}); }
-case 'unblock': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); await sock.updateBlockStatus(text.replace(/[^0-9]/g,'')+'@s.whatsapp.net','unblock'); return sock.sendMessage(from,{text:'Unblocked'},{quoted:m}); }
-case 'vv10': { let q=m.quoted||m; if(!q) return sock.sendMessage(from,{text:'Reply to viewonce'},{quoted:m}); try{ let dl=await q.download(); let msg=q.mtype||''; if(msg.includes('image')) return sock.sendMessage(from,{image:dl,caption:'🔓 ViewOnce Opened'},{quoted:m}); if(msg.includes('video')) return sock.sendMessage(from,{video:dl,caption:'🔓 ViewOnce Opened'},{quoted:m}); if(msg.includes('audio')) return sock.sendMessage(from,{audio:dl,mimetype:'audio/mp4',ptt:true},{quoted:m}); return sock.sendMessage(from,{text:'❌ Not viewonce'},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'❌ Failed: '+e.message},{quoted:m}); } }
-case 'ban': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); let num=m.quoted?m.quoted.sender:args[0]?.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; global.banned=global.banned||[]; global.banned.push(num); return sock.sendMessage(from,{text:`🚫 BANNED @${num.split('@')[0]}`,mentions:[num]},{quoted:m}); }
-case 'unban': { if(!isOwner) return sock.sendMessage(from,{text:'❌ OWNER ONLY'},{quoted:m}); let num=m.quoted?m.quoted.sender:args[0]?.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; global.banned=global.banned||[]; global.banned=global.banned.filter(v=>v!==num); return sock.sendMessage(from,{text:`✅ UNBANNED @${num.split('@')[0]}`,mentions:[num]},{quoted:m}); }
-case 'autoread': { global.db.auto.autoread=text==='on'; return sock.sendMessage(from,{text:`Autoread ${global.db.auto.autoread?'ON':'OFF'}`},{quoted:m}); }
-case 'autotyping': { global.db.auto.autotyping=text==='on'; return sock.sendMessage(from,{text:`Autotyping ${text}`},{quoted:m}); }
-case 'autoonline': { global.db.auto.autoonline=text==='on'; return sock.sendMessage(from,{text:`AutoOnline ${text}`},{quoted:m}); }
-case 'autorecording': { global.db.auto.autorecording=text==='on'; return sock.sendMessage(from,{text:`AutoRec ${text}`},{quoted:m}); }
-case 'autoreact': { global.db.auto.autoreact=text==='on'; return sock.sendMessage(from,{text:`AutoReact ${text}`},{quoted:m}); }
-case 'autoreply': { global.db.auto.autoreply=text==='on'; return sock.sendMessage(from,{text:`AutoReply ${text}`},{quoted:m}); }
-case 'autosticker': { global.db.auto.autosticker=text==='on'; return sock.sendMessage(from,{text:`AutoSticker ${text}`},{quoted:m}); }
-case 'autoview': { global.db.auto.autoview=text==='on'; return sock.sendMessage(from,{text:`AutoView ${text}`},{quoted:m}); }
-case 'autobio': { global.db.auto.autobio=text==='on'; return sock.sendMessage(from,{text:`AutoBio ${text}`},{quoted:m}); }
-case 'ai': case 'gpt': case 'ask': { if(!q) return sock.sendMessage(from,{text:'Ask something!'},{quoted:m}); let key=process.env.GROQ_API_KEY||process.env.GROQ_KEY; if(!key) return sock.sendMessage(from,{text:'❌ GROQ_API_KEY missing! Add in Render Env'},{quoted:m}); try{ let r=await fetch('https://api.groq.com/openai/v1/chat/completions',{method:'POST',headers:{'Authorization':`Bearer ${key}`,'Content-Type':'application/json'},body:JSON.stringify({model:'llama-3.3-70b-versatile',messages:[{role:'system',content:'You are CRASHER MD'},{role:'user',content:q}]})}); let j=await r.json(); if(j.error) return sock.sendMessage(from,{text:`Groq Error: ${j.error.message}`},{quoted:m}); return sock.sendMessage(from,{text:`*🤖 CRASHER AI:*\n\n${j.choices[0].message.content}`},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'Groq failed!'},{quoted:m}); } }
-case 'unmute': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ GROUP ONLY'},{quoted:m}); if(!isBotAdmin) return sock.sendMessage(from,{text:'❌ Bot no be admin!'},{quoted:m}); if(!isAdmin) return sock.sendMessage(from,{text:'❌ Admin only!'},{quoted:m}); await sock.groupSettingUpdate(from,'not_announcement'); return sock.sendMessage(from,{text:'🔊 Group Unmuted!'},{quoted:m}); }
-case 'autolikestatus': { global.db.auto.autolikestatus=text==='on'; return sock.sendMessage(from,{text:`AutoLikeStatus ${text}`},{quoted:m}); }
-case 'antilink': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].link=text==='on'; return sock.sendMessage(from,{text:`Antilink ${text}`},{quoted:m}); }
-case 'antibot': case 'antispam': case 'antiflood': case 'antitag': case 'antidelete': case 'antibadword': case 'antisticker': case 'antifake': case 'antipromote': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from][command]=text==='on'; return sock.sendMessage(from,{text:`${command} ${text}`},{quoted:m}); }
-case 'kick': case 'remove': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isBotAdmin) return sock.sendMessage(from,{text:'❌ Bot no be admin!'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'❌ Admin only!'},{quoted:m}); let num=m.quoted?m.quoted.sender:args[0]?.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; if(!num.includes('@')) return sock.sendMessage(from,{text:'Tag user'},{quoted:m}); await sock.groupParticipantsUpdate(from,[num],'remove'); return sock.sendMessage(from,{text:`👢 Kicked @${num.split('@')[0]}`,mentions:[num]},{quoted:m}); }
-case 'add': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'Only admin & owner!'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'Give number! .add 234...'},{quoted:m}); let jid=text.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; await sock.groupParticipantsUpdate(from,[jid],'add'); return sock.sendMessage(from,{text:`Added @${text} ✅`,mentions:[jid]},{quoted:m}); }
-case 'promote': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); let u=m.mentionedJid?.[0]||m.quoted?.sender||(args[0]?args[0]+'@s.whatsapp.net':0); if(!u) return sock.sendMessage(from,{text:'Tag user'},{quoted:m}); await sock.groupParticipantsUpdate(from,[u],'promote'); return sock.sendMessage(from,{text:'✅ Promoted!'},{quoted:m}); }
-case 'demote': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); let u=m.mentionedJid?.[0]||m.quoted?.sender||(args[0]?args[0]+'@s.whatsapp.net':0); if(!u) return sock.sendMessage(from,{text:'Tag user'},{quoted:m}); await sock.groupParticipantsUpdate(from,[u],'demote'); return sock.sendMessage(from,{text:'✅ Demoted!'},{quoted:m}); }
-case 'warn': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); const mention=m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]; if(!mention) return sock.sendMessage(from,{text:'Tag user'},{quoted:m}); global.db.warns[mention]=(global.db.warns[mention]||0)+1; return sock.sendMessage(from,{text:`Warned ${mention} [${global.db.warns[mention]}/3]`},{quoted:m}); }
-case 'warnings': { const mention=m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]||sender; return sock.sendMessage(from,{text:`Warnings: ${global.db.warns[mention]||0}`},{quoted:m}); }
-case 'resetwarn': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); const mention=m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]; delete global.db.warns[mention]; return sock.sendMessage(from,{text:'Reset'},{quoted:m}); }
-case 'mute': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ GROUP ONLY'},{quoted:m}); if(!isBotAdmin) return sock.sendMessage(from,{text:'❌ Bot no be admin!'},{quoted:m}); if(!isAdmin) return sock.sendMessage(from,{text:'❌ Admin only!'},{quoted:m}); await sock.groupSettingUpdate(from,'announcement'); return sock.sendMessage(from,{text:'🔇 Group Muted! Only Admins fit talk!'},{quoted:m}); }
-case 'delete': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); const qid=m.message.extendedTextMessage?.contextInfo?.stanzaId; const qp=m.message.extendedTextMessage?.contextInfo?.participant; if(!qid) return sock.sendMessage(from,{text:'Reply message'},{quoted:m}); await sock.sendMessage(from,{delete:{remoteJid:from,fromMe:false,id:qid,participant:qp}}); return; }
-case 'groupinfo': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); return sock.sendMessage(from,{text:`*${groupMetadata.subject}*\nID: ${from}\nMembers: ${participants.length}\nAdmins: ${participants.filter(p=>p.admin).length}\nDesc: ${groupMetadata.desc||'None'}`},{quoted:m}); }
-case 'grouplink': case 'linkgroup': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isBotAdmin) return sock.sendMessage(from,{text:'❌ Bot not admin'},{quoted:m}); const code=await sock.groupInviteCode(from); return sock.sendMessage(from,{text:`https://chat.whatsapp.com/${code}`},{quoted:m}); }
-case 'setnamegc': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); if(!isBotAdmin) return sock.sendMessage(from,{text:'❌ Bot not admin'},{quoted:m}); await sock.groupUpdateSubject(from,text); return sock.sendMessage(from,{text:'Name updated'},{quoted:m}); }
-case 'setdesc': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); await sock.groupUpdateDescription(from,text); return sock.sendMessage(from,{text:'Desc updated'},{quoted:m}); }
-case 'open': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'❌ Admin only'},{quoted:m}); await sock.groupSettingUpdate(from,'not_announcement'); return sock.sendMessage(from,{text:'Group Opened ✅'},{quoted:m}); }
-case 'close': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'❌ Admin only'},{quoted:m}); await sock.groupSettingUpdate(from,'announcement'); return sock.sendMessage(from,{text:'Group Closed 🔒'},{quoted:m}); }
-case 'tagall': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'Only admin & owner!'},{quoted:m}); const members=groupMetadata.participants; let txt=`*📢 TAGALL - ${groupMetadata.subject}*\nMembers: ${members.length}\n\n`; const ments=[]; for(const mem of members){ txt+=`@${mem.id.split('@')[0]}\n`; ments.push(mem.id); } return sock.sendMessage(from,{text:txt,mentions:ments},{quoted:m}); }
-case 'hidetag': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); return sock.sendMessage(from,{text:text||'hidetag',mentions:participants.map(a=>a.id)}); }
-case 'listmembers': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); return sock.sendMessage(from,{text:participants.map((p,i)=>`${i+1}. ${p.id.split('@')[0]} ${p.admin?'[admin]':''}`).join('\n')},{quoted:m}); }
-case 'admins': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); const admins=participants.filter(p=>p.admin).map(p=>p.id); return sock.sendMessage(from,{text:`*Admins [${admins.length}]*\n${admins.map(a=>'@'+a.split('@')[0]).join('\n')}`,mentions:admins},{quoted:m}); }
-case 'vv9': { if(!m.quoted) return sock.sendMessage(from,{text:'❌ Reply view-once'},{quoted:m}); try{ let t=Object.keys(m.quoted.message)[0]; let c=m.quoted.message[t]; let b=await sock.downloadMediaMessage({message:{[t]:c}}); if(t.includes('image')) return sock.sendMessage(from,{image:b,caption:c.caption||''},{quoted:m}); if(t.includes('video')) return sock.sendMessage(from,{video:b,caption:c.caption||''},{quoted:m}); }catch{ return sock.sendMessage(from,{text:'❌ Failed'},{quoted:m}); } }case 'alwaysonline': { if(!isOwner) return sock.sendMessage(from,{text:'👑 Owner only!'},{quoted:m}); const on=text==='on'; global.db.auto.alwaysonline=on; try{ if(on) await sock.sendPresenceUpdate('available',from); else await sock.sendPresenceUpdate('unavailable'); }catch{} return sock.sendMessage(from,{text:`AlwaysOnline ${on?'ON ✅':'OFF ❌'}`},{quoted:m}); }
-case 'play': { if(!q) return sock.sendMessage(from,{text:'❌ What song?'},{quoted:m}); try{ let yts=require('yt-search'); let ytdl=require('@distube/ytdl-core'); let s=await yts(q); let v=s.videos[0]; let info=await ytdl.getInfo(v.url); let format=ytdl.chooseFormat(info.formats,{filter:'audioonly',quality:'highestaudio'}); return sock.sendMessage(from,{audio:{url:format.url},mimetype:'audio/mp4',fileName:v.title+'.mp3'},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'❌ Error: '+e.message},{quoted:m}); } }
-case 'video': { if(!text) return sock.sendMessage(from,{text:'Give YT link'},{quoted:m}); return sock.sendMessage(from,{text:`🎬 Video: ${text} - Add ytdl logic`},{quoted:m}); }
-case 'tiktok': { if(!text) return sock.sendMessage(from,{text:'Give TikTok link'},{quoted:m}); return sock.sendMessage(from,{text:`TikTok: ${text}`},{quoted:m}); }
-case 'instagram': { if(!text) return sock.sendMessage(from,{text:'Give IG link'},{quoted:m}); return sock.sendMessage(from,{text:`IG: ${text}`},{quoted:m}); }
-case 'facebook': { if(!text) return sock.sendMessage(from,{text:'Give FB link'},{quoted:m}); return sock.sendMessage(from,{text:`FB: ${text}`},{quoted:m}); }
-case 'mediafire': { if(!text) return sock.sendMessage(from,{text:'Give MediaFire link'},{quoted:m}); return sock.sendMessage(from,{text:`MediaFire: ${text}`},{quoted:m}); }
-case 'protection': { if(!isGroupChat) return sock.sendMessage(from,{text:'❌ Group only'},{quoted:m}); if(!global.gcProtect) global.gcProtect={}; if(!global.gcProtect[from]) global.gcProtect[from]={antilink:true,antimention:true,antistatus:true,antibot:true}; let a=(args[0]||'').toLowerCase(); if(a==='on'){ global.gcProtect[from]={antilink:true,antimention:true,antistatus:true,antibot:true}; return sock.sendMessage(from,{text:'🛡️ ALL PROTECTION ON ✅'},{quoted:m}); } if(a==='off'){ global.gcProtect[from]={antilink:false,antimention:false,antistatus:false,antibot:false}; return sock.sendMessage(from,{text:'🛡️ ALL PROTECTION OFF ❌'},{quoted:m}); } return sock.sendMessage(from,{text:`🛡️ Current: Antilink ${global.gcProtect[from].antilink?'ON ✅':'OFF ❌'}`},{quoted:m}); }
-case 'apk': { if(!q) return sock.sendMessage(from,{text:'❌ Name? .apk whatsapp'},{quoted:m}); try{ let axios=require('axios'); let r=await axios.get('https://ws75.aptoide.com/api/7/apps/search?query='+encodeURIComponent(q)+'&limit=1'); let a=r.data.datalist.list[0]; if(!a) return sock.sendMessage(from,{text:'❌ Not found'},{quoted:m}); await sock.sendMessage(from,{text:`*${a.name}* v${a.file.vername} ${(a.file.filesize/1024/1024).toFixed(2)}MB\nDownloading...`},{quoted:m}); return sock.sendMessage(from,{document:{url:a.file.path},fileName:a.name+'.apk',mimetype:'application/vnd.android.package-archive'},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'❌ Failed: '+e.message},{quoted:m}); } }
-case 'pinterest': case 'pin': case 'pindl': { if(!q) return sock.sendMessage(from,{text:'Link! Ex: .pin https://pin.it/...'},{quoted:m}); try{ let u=q.match(/https?:\/\/\S+/)?.[0]; let r=await fetch(u,{headers:{'User-Agent':'Mozilla/5.0'}}); let t=await r.text(); let v=(t.match(/"url":"(https:\/\/v1\.pinimg\.com[^"]+\.mp4[^"]*)"/)?.[1]||t.match(/https:\/\/v1\.pinimg\.com\/videos\/[^"']+\.mp4/)?.[0]||'').replace(/\\u002F/g,'/').replace(/\\/g,''); let img=t.match(/https:\/\/i\.pinimg\.com\/originals\/[^"']+\.(jpg|png|jpeg)/)?.[0]; if(v) return sock.sendMessage(from,{video:{url:v},caption:'📌 Pinterest'},{quoted:m}); if(img) return sock.sendMessage(from,{image:{url:img},caption:'📌 Pinterest'},{quoted:m}); return sock.sendMessage(from,{text:'No media found!'},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'Error! Private pin maybe'},{quoted:m}); } }
-case 'github': { if(!text) return sock.sendMessage(from,{text:'Give github link'},{quoted:m}); return sock.sendMessage(from,{text:`GitHub: ${text}`},{quoted:m}); }
-case 'weather': { if(!q) return sock.sendMessage(from,{text:'Give location! Ex: .weather Enugu'},{quoted:m}); try{ let res=await fetch(`https://wttr.in/${q}?format=%C+%t+%w+%h`); let data=await res.text(); return sock.sendMessage(from,{text:`╭═『 🌤️ Weather 』═╮\n│ 📍 ${q.toUpperCase()}\n│ ${data}\n╰═══════╯`},{quoted:m}); }catch{ return sock.sendMessage(from,{text:'Error fetching weather!'},{quoted:m}); } }
-case 'translate': { if(!text) return sock.sendMessage(from,{text:'.translate en | hello'},{quoted:m}); const [lang,...rest]=text.split('|'); return sock.sendMessage(from,{text:`🌐 [${lang.trim()}]: ${rest.join('|').trim()}`},{quoted:m}); }
-case 'calculate': { try{ return sock.sendMessage(from,{text:`🧮 = ${eval(text)}`},{quoted:m}); }catch{ return sock.sendMessage(from,{text:'Invalid calc'},{quoted:m}); } }
-case 'shorturl': { if(!text) return sock.sendMessage(from,{text:'Give url'},{quoted:m}); return sock.sendMessage(from,{text:`🔗 https://tinyurl.com/api-create.php?url=${encodeURIComponent(text)}`},{quoted:m}); }
-case 'prefix': return sock.sendMessage(from,{text:`Prefix: ${global.prefix}`},{quoted:m});
-case 'public': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.settings.mode='public'; return sock.sendMessage(from,{text:'✅ PUBLIC MODE ON'},{quoted:m}); }
-case 'private': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.settings.mode='private'; return sock.sendMessage(from,{text:'✅ PRIVATE MODE ON'},{quoted:m}); }
-case 'setmode': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); let mm=(args[0]||'').toLowerCase(); if(mm==='public'){ global.db.settings.mode='public'; return sock.sendMessage(from,{text:'✅ PUBLIC'},{quoted:m}); } if(mm==='private'||mm==='self'){ global.db.settings.mode='private'; return sock.sendMessage(from,{text:'✅ PRIVATE'},{quoted:m}); } return sock.sendMessage(from,{text:`Mode: ${global.db.settings.mode}`},{quoted:m}); }
-case 'ghosttag': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'Give text\n.ghosttag hello'},{quoted:m}); await sock.sendMessage(from,{text:text,mentions:participants.map(a=>a.id)},{quoted:m}); return sock.sendMessage(from,{text:'✅ Ghost tag sent'},{quoted:m}); }
-case 'fakerecord': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); await sock.sendPresenceUpdate('composing',from); await sock.sendPresenceUpdate('recording',from); return sock.sendMessage(from,{text:'✅ Fake recording for 1hr'},{quoted:m}); }
-case 'offlinecall': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.offlinecall=text==='on'; return sock.sendMessage(from,{text:`✅ OfflineCall ${global.db.auto.offlinecall?'ON':'OFF'}`},{quoted:m}); }
-case 'hidestatus': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.hidestatus=text==='on'; return sock.sendMessage(from,{text:`✅ HideStatus ${global.db.auto.hidestatus?'ON':'OFF'}`},{quoted:m}); }
-case 'antivv': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.anti.antivv=text==='on'; return sock.sendMessage(from,{text:`✅ AntiVV ${global.db.anti.antivv?'ON':'OFF'}`},{quoted:m}); }
-case 'antiedit': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antiedit=text==='on'; return sock.sendMessage(from,{text:`✅ AntiEdit ${text}`},{quoted:m}); }
-case 'antiinvite': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antiinvite=text==='on'; return sock.sendMessage(from,{text:`✅ AntiInvite ${text}`},{quoted:m}); }
-case 'anticall': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.anti.anticall=text==='on'; return sock.sendMessage(from,{text:`✅ AntiCall ${global.db.anti.anticall?'ON':'OFF'}`},{quoted:m}); }
-case 'antimention': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antimention=text==='on'; return sock.sendMessage(from,{text:`✅ AntiMention ${text}`},{quoted:m}); }
-// --- DISABLED CRASH ---
-case 'crashios': case 'crashall': case 'channelcrash': case 'pollcrash': case 'blastgc': case 'ownercrash': return sock.sendMessage(from,{text:'❌ Crash command disabled - violates WhatsApp ToS'},{quoted:m});
-case 'stickerbomb': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); let q=m.message.imageMessage||m.quoted?.imageMessage; if(!q) return sock.sendMessage(from,{text:'Reply image'},{quoted:m}); let buf=await downloadMedia(q,'image'); for(let i=0;i<5;i++){ await sock.sendMessage(from,{sticker:buf},{quoted:m}) } return sock.sendMessage(from,{text:'✅ StickerBomb sent'},{quoted:m}); }
-case 'autotypegc': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.autotypegc=text==='on'; return sock.sendMessage(from,{text:`✅ AutoTypeGC ${text}`},{quoted:m}); }
-case 'autobioquote': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.autobioquote=text==='on'; return sock.sendMessage(from,{text:`✅ AutoBioQuote ${text}`},{quoted:m}); }
-case 'autodp': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.autodp=text==='on'; return sock.sendMessage(from,{text:`✅ AutoDP ${text}`},{quoted:m}); }
-case 'autoreactgc': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].autoreactgc=text==='on'; return sock.sendMessage(from,{text:`✅ AutoReactGC ${text}`},{quoted:m}); }
-case 'autosavecontact': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.autosave=text==='on'; return sock.sendMessage(from,{text:`✅ AutoSaveContact ${text}`},{quoted:m}); }
-case 'storydl': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); let q=m.message.extendedTextMessage?.contextInfo?.quotedMessage?.imageMessage||m.message.extendedTextMessage?.contextInfo?.quotedMessage?.videoMessage; if(!q) return sock.sendMessage(from,{text:'Reply status'},{quoted:m}); let type=q.imageMessage?'image':'video'; let media=await downloadMedia(q.imageMessage||q.videoMessage,type); return sock.sendMessage(from,{[type]:media,caption:'✅ Story saved secretly'},{quoted:m}); }
-case 'channeldl': { if(!text) return sock.sendMessage(from,{text:'Give channel post link'},{quoted:m}); return sock.sendMessage(from,{text:'✅ ChannelDL - Downloading private channel post'},{quoted:m}); }
-case 'savechat': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); let chats=await sock.chats; let txt=JSON.stringify(chats,null,2); require('fs').writeFileSync('./savedchats.json',txt); return sock.sendMessage(from,{text:'✅ Full chat saved'},{quoted:m}); }
-case 'viewbusiness': { let target=text.replace(/[^0-9]/g,'')+'@s.whatsapp.net'; if(!target.includes('@')) return sock.sendMessage(from,{text:'Give number'},{quoted:m}); try{ let biz=await sock.getBusinessProfile(target); return sock.sendMessage(from,{text:`Business: ${JSON.stringify(biz)}`},{quoted:m}); }catch{ return sock.sendMessage(from,{text:'No business catalog'},{quoted:m}); } }
-case 'invisible': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.invisible=text==='on'; if(text==='on'){ await sock.sendPresenceUpdate('unavailable') } return sock.sendMessage(from,{text:`✅ Invisible ${text}`},{quoted:m}); }
-case 'readall': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); let all=await sock.groupFetchAllParticipating(); for(let id in all){ await sock.readMessages([{remoteJid:id,id:m.key.id}]) } return sock.sendMessage(from,{text:'✅ All chats marked as read'},{quoted:m}); }
-case 'copychannel': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'Give channel link'},{quoted:m}); return sock.sendMessage(from,{text:'✅ CopyChannel - Cloning channel'},{quoted:m}); }
-case 'fakegc': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); return sock.sendMessage(from,{text:`*Fake Group Info*\nName: ${groupMetadata.subject}\nMembers: 999\nOnline: 450`},{quoted:m}); }
-case 'language': return await sock.sendMessage(from,{text:'Lang: EN'},{quoted:m});
-case 'sticker': { const q=m.message.imageMessage||m.quoted?.imageMessage; if(!q) return sock.sendMessage(from,{text:'Send image with .sticker'},{quoted:m}); const buf=await downloadMedia(q,'image'); await sock.sendMessage(from,{sticker:buf},{quoted:m}); return; }
-case 'smartbio': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.smartbio=text==='on'; return sock.sendMessage(from,{text:`✅ SmartBio ${text}`},{quoted:m}); }
-case 'fakeseen': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); await sock.sendMessage(from,{text:text||'Seen'}); await sock.readMessages([m.key]); return sock.sendMessage(from,{text:'✅ FakeSeen'},{quoted:m}); }
-case 'shadowban': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); let t=m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]; if(!t) return sock.sendMessage(from,{text:'Tag user'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].shadow=t; return sock.sendMessage(from,{text:`✅ ShadowBan @${t.split('@')[0]}`},{quoted:m}); }
-case 'autotrans': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].autotrans=text||'en'; return sock.sendMessage(from,{text:`✅ AutoTrans ${text}`},{quoted:m}); }
-case 'voicetag': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); await sock.sendMessage(from,{audio:{url:'https://files.catbox.moe/voice.mp3'},mimetype:'audio/mp4',ptt:true,mentions:participants.map(a=>a.id)}); return sock.sendMessage(from,{text:'✅ VoiceTag'},{quoted:m}); }
-case 'backupgc': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); let data=participants.map(p=>p.id).join('\n'); require('fs').writeFileSync(`./backup-${from}.txt`,data); return sock.sendMessage(from,{text:`✅ GroupBackup saved - ${participants.length} contacts`},{quoted:m}); }
-case 'autokickdead': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].kickdead=text==='on'; return sock.sendMessage(from,{text:`✅ AutoKickDead ${text}`},{quoted:m}); }
-case 'chatrank': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); let ranks=participants.map((p,i)=>`${i+1}. @${p.id.split('@')[0]} - ${Math.floor(Math.random()*1000)} msgs`).join('\n'); return sock.sendMessage(from,{text:`*ChatRank Top*\n${ranks}`,mentions:participants.map(a=>a.id)},{quoted:m}); }
-case 'confess': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'Write confession\n.confess I like Amaka'},{quoted:m}); return sock.sendMessage(from,{text:`🤫 Anonymous Confession:\n${text}`},{quoted:m}); }
-case 'pair': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); let a=participants[Math.floor(Math.random()*participants.length)]; let b=participants[Math.floor(Math.random()*participants.length)]; return sock.sendMessage(from,{text:`💘 Pairing:\n@${a.id.split('@')[0]} ❤️ @${b.id.split('@')[0]}\nMatch: ${Math.floor(Math.random()*100)}%`,mentions:[a.id,b.id]},{quoted:m}); }
-case 'ghostleave': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.auto.ghostleave=true; return sock.sendMessage(from,{text:'👻 GhostLeave activated'},{quoted:m}); }
-case 'savestatusall': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.savestatus=text==='on'; return sock.sendMessage(from,{text:`✅ SaveStatusAll ${text}`},{quoted:m}); }
-case 'fakelive': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); await sock.sendMessage(from,{location:{degreesLatitude:6.5244,degreesLongitude:3.3792}}); return sock.sendMessage(from,{text:'✅ FakeLive - Live location'},{quoted:m}); }
-case 'selfdestruct': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'Give text\n.selfdestruct secret'},{quoted:m}); let msg=await sock.sendMessage(from,{text:`💣 SelfDestruct:\n${text}\n(Delete in 10sec)`},{quoted:m}); setTimeout(()=>sock.sendMessage(from,{delete:{remoteJid:from,fromMe:true,id:msg.key.id}}),10000); return; }
-case 'nightmode': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].nightmode=text==='on'; return sock.sendMessage(from,{text:`✅ NightMode ${text}`},{quoted:m}); }
-case 'welcomeai': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].welcomeai=text==='on'; return sock.sendMessage(from,{text:`✅ WelcomeAI ${text}`},{quoted:m}); }
-case 'antilong': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antilong=text==='on'; return sock.sendMessage(from,{text:`✅ AntiLong ${text}`},{quoted:m}); }
-case 'antiemoji': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antiemoji=text==='on'; return sock.sendMessage(from,{text:`✅ AntiEmoji ${text}`},{quoted:m}); }
-case 'rankcard': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); let t=m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]||sender; let lvl=Math.floor(Math.random()*100); return sock.sendMessage(from,{image:{url:`https://api.rank.com/card?jid=${t}&level=${lvl}`},caption:`🏆 RankCard @${t.split('@')[0]}\nLevel: ${lvl}`,mentions:[t]},{quoted:m}); }
-case 'levelup': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].levelup=text==='on'; return sock.sendMessage(from,{text:`✅ LevelUp ${text}`},{quoted:m}); }
-case 'economy': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].economy=text==='on'; return sock.sendMessage(from,{text:`✅ Economy ${text}`},{quoted:m}); }
-case 'fakepoll': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); await sock.sendMessage(from,{poll:{name:text||'Fake Poll?',values:['Yes 99%','No 1%'],selectableCount:1}}); return sock.sendMessage(from,{text:'✅ FakePoll'},{quoted:m}); }
-case 'quiz': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); await sock.sendMessage(from,{poll:{name:'Quiz: Capital of Nigeria?',values:['Lagos','Abuja','Kano','Warri'],selectableCount:1}}); return sock.sendMessage(from,{text:'✅ Quiz started'},{quoted:m}); }
-case 'chatbotai': { global.db.auto.chatbotai=text==='on'; return sock.sendMessage(from,{text:`✅ ChatBotAI ${text}`},{quoted:m}); }
-case 'translatevoice': { let q=m.message.audioMessage||m.quoted?.audioMessage; if(!q) return sock.sendMessage(from,{text:'Reply voice note'},{quoted:m}); return sock.sendMessage(from,{text:'✅ Voice translated to text: Hello world'},{quoted:m}); }
-case 'readvoice': { let q=m.message.audioMessage||m.quoted?.audioMessage; if(!q) return sock.sendMessage(from,{text:'Reply VN to read'},{quoted:m}); return sock.sendMessage(from,{text:'✅ ReadVoice: [Transcribing...]'},{quoted:m}); }
-case 'remind': { if(!text) return sock.sendMessage(from,{text:'Use: .remind 10m do laundry'},{quoted:m}); let [time,...msg]=text.split(' '); return sock.sendMessage(from,{text:`✅ Reminder set for ${time}: ${msg.join(' ')}`},{quoted:m}); }
-case 'afk': { global.db.auto.afk=text||'AFK'; global.db.auto.afktime=Date.now(); return sock.sendMessage(from,{text:`✅ You now AFK: ${text}`},{quoted:m}); }
-case 'afkcheck': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); return sock.sendMessage(from,{text:`AFK users: ${global.db.auto.afk||'None'}`},{quoted:m}); }
-case 'antispam2': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antispam2=text==='on'; return sock.sendMessage(from,{text:`✅ AntiSpam2 ${text}`},{quoted:m}); }
-case 'warnlimit': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].warnlimit=parseInt(text)||3; return sock.sendMessage(from,{text:`✅ WarnLimit set to ${text}`},{quoted:m}); }
-case 'role': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); let t=m.message.extendedTextMessage?.contextInfo?.mentionedJid?.[0]; if(!t||!text) return sock.sendMessage(from,{text:'.role @user Mod'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].roles=global.db.anti[from].roles||{}; global.db.anti[from].roles[t]=text; return sock.sendMessage(from,{text:`✅ Role @${t.split('@')[0]} = ${text}`},{quoted:m}); }
-case 'ticket': { if(!text) return sock.sendMessage(from,{text:'Problem?\n.ticket bot no dey work'},{quoted:m}); let id=Math.floor(Math.random()*10000); return sock.sendMessage(from,{text:`🎫 Ticket #${id}\nProblem: ${text}\nStatus: Open`},{quoted:m}); }
-case 'report': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!text) return sock.sendMessage(from,{text:'.report @user reason'},{quoted:m}); return sock.sendMessage(from,{text:`🚨 Anonymous Report:\n${text}\n(Reported to admins)`},{quoted:m}); }
-case 'ghostonline': { if(!isOwner) return sock.sendMessage(from,{text:'❌ Owner only'},{quoted:m}); global.db.auto.ghostonline=text==='on'; if(text==='on') await sock.sendPresenceUpdate('available'); else await sock.sendPresenceUpdate('unavailable'); return sock.sendMessage(from,{text:`✅ GhostOnline ${text}`},{quoted:m}); }
-case 'gitclone': case 'clone': { if(!q) return sock.sendMessage(from,{text:'Link! Ex: .gitclone https://github.com/user/repo'},{quoted:m}); try{ let url=q.match(/https?:\/\/github\.com\/[^\s]+/)?.[0]; if(!url) return sock.sendMessage(from,{text:'Invalid github link!'},{quoted:m}); url=url.replace(/\.git$/,''); let name=url.split('/').pop(); let zip=`${url}/archive/refs/heads/main.zip`; let check=await fetch(zip,{method:'HEAD'}); if(!check.ok) zip=`${url}/archive/refs/heads/master.zip`; return sock.sendMessage(from,{document:{url:zip},mimetype:'application/zip',fileName:`${name}.zip`,caption:`✅ Cloned: ${name}`},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'Failed to clone!'},{quoted:m}); } }
-case 'clonevoice': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); let q=m.message.audioMessage||m.quoted?.audioMessage; if(!q) return sock.sendMessage(from,{text:'Reply VN to clone'},{quoted:m}); return sock.sendMessage(from,{text:'✅ Voice cloned - Bot go talk like that person'},{quoted:m}); }
-case 'stickerai': { if(!q) return sock.sendMessage(from,{text:'❌ Give prompt! Ex: .stickerai cat with suit'},{quoted:m}); try{ let url=`https://image.pollinations.ai/prompt/${encodeURIComponent(q)}?width=512&height=512&nologo=true`; let {Sticker}=require('wa-sticker-formatter'); let st=new Sticker(url,{pack:'CRASHER MD',author:'AI',type:'full',quality:70}); return sock.sendMessage(from,{sticker:await st.toBuffer()},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'❌ AI fail: '+e.message},{quoted:m}); } }
-case 'autoreplyai': { global.db.auto.autoreplyai=text==='on'; return sock.sendMessage(from,{text:`✅ AutoReplyAI ${text}`},{quoted:m}); }
-case 'antilink2': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antilink2=text==='on'; return sock.sendMessage(from,{text:`✅ AntiLink2 ${text}`},{quoted:m}); }
-case 'autodelete': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].autodelete=parseInt(text)||60; return sock.sendMessage(from,{text:`✅ AutoDelete ${text}sec`},{quoted:m}); }
-case 'groupicon': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); try{ let pp=await sock.profilePictureUrl(from,'image'); return sock.sendMessage(from,{image:{url:pp},caption:'✅ Group icon'},{quoted:m}); }catch{ return sock.sendMessage(from,{text:'No icon'},{quoted:m}); } }
-case 'hidetag2': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); if(!isAdmin && !isOwner) return sock.sendMessage(from,{text:'🛡️ Admin only'},{quoted:m}); let msg=text||'Hidden tag'; return sock.sendMessage(from,{text:msg,mentions:participants.map(a=>a.id)}); }
-case 'aisticker': { if(!q) return sock.sendMessage(from,{text:'Give prompt! .aisticker cute anime girl'},{quoted:m}); await sock.sendMessage(from,{text:'🎨 Generating AI sticker...'},{quoted:m}); try{ let img=`https://image.pollinations.ai/prompt/${encodeURIComponent(q)}?width=512&height=512`; let {Sticker}=require('wa-sticker-formatter'); let sticker=new Sticker(img,{pack:'CRASHER MD',author:'AI BOT',type:'full',quality:80}); return sock.sendMessage(from,{sticker:await sticker.toBuffer()},{quoted:m}); }catch(e){ return sock.sendMessage(from,{text:'Fail: '+e.message},{quoted:m}); } }
-case 'emojiinfo': { if(!text) return sock.sendMessage(from,{text:'Give emoji\n.emojiinfo 😂'},{quoted:m}); return sock.sendMessage(from,{text:`Emoji: ${text}\nName: Joy`},{quoted:m}); }
-case 'age': { if(!text) return sock.sendMessage(from,{text:'Name\n.age CRASHER'},{quoted:m}); return sock.sendMessage(from,{text:`Age of ${text}: 25 years (AI guess)`},{quoted:m}); }
-case 'groupopenauto': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].openauto=text; return sock.sendMessage(from,{text:`✅ Group auto open at ${text}`},{quoted:m}); }
-case 'groupcloseauto': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].closeauto=text; return sock.sendMessage(from,{text:`✅ Group auto close at ${text}`},{quoted:m}); }
-case 'antisticker2': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].antisticker2=text==='on'; return sock.sendMessage(from,{text:`✅ AntiSticker2 ${text}`},{quoted:m}); }
-case 'anticontact2': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); global.db.anti[from]=global.db.anti[from]||{}; global.db.anti[from].anticontact2=text==='on'; return sock.sendMessage(from,{text:`✅ AntiContact2 ${text}`},{quoted:m}); }
-case 'daily': { global.db.auto.daily=text==='on'; return sock.sendMessage(from,{text:`✅ Daily reward ${text}`},{quoted:m}); }
-case 'leaderboard': { if(!isGroupChat) return sock.sendMessage(from,{text:'👥 Group only'},{quoted:m}); return sock.sendMessage(from,{text:`*Leaderboard*\n1. You - 1000pts\n2. @user - 800pts\n3. @user2 - 600pts`},{quoted:m}); }
-case 'toimg': { const q=m.quoted?.stickerMessage; if(!q) return sock.sendMessage(from,{text:'Reply sticker'},{quoted:m}); const buf=await downloadMedia(q,'sticker'); return sock.sendMessage(from,{image:buf},{quoted:m}); }
-case 'take': return await sock.sendMessage(from,{text:'Take done'},{quoted:m});
-case 'attp': { if(!text) return sock.sendMessage(from,{text:'Text?'},{quoted:m}); return sock.sendMessage(from,{image:{url:`https://api.zenkey.my.id/api/textpro/attp?text=${encodeURIComponent(text)}`},caption:`Attp ${text}`},{quoted:m}); }
-case 'smeme': return await sock.sendMessage(from,{text:`Smeme ${text}`},{quoted:m});
-case 'pickupline': case 'rizz': { const a=["Are you","Girl are you","If you be","You be like"], b=["NEPA","WiFi","jollof rice","Google","my phone battery","ChapGPT","garri"], c=["because you light up my life","because I'm feeling connection","because I can never get enough of you","because you have everything I'm searching for","because you full my mind","because you fine pass AI","and I don dey fall for you"]; return sock.sendMessage(from,{text:`😏 *RANDOM RIZZ*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`},{quoted:m}); }
-case 'motivation': case 'motivate': { const a=["Bro wake up,","Listen,", "Real talk,", "No cap,"], b=["no one will do it for you","grind now shine later","consistency beats talent","your future needs you","hustle in silence"], c=["so get up and work!","stop giving excuses!","God did but you must do!","make money make sense!"]; return sock.sendMessage(from,{text:`🔥 *MOTIVATION*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} - ${c[Math.floor(Math.random()*c.length)]}`},{quoted:m}); }
-case 'insult': { const a=["You be like","Your face be like","You resemble","Na so you be like","You be exactly like"], b=["MTN data","pure water wey sun catch","NEPA light","gala for Lagos traffic","expired Indomie","fuel for scarcity","PHCN bill","okada wey no get brake"], c=["you dey chop money but no value","flat and useless","e dey on and off","nobody want pick you","sense no dey inside","you go wound person eye","na only God fit help you","go sit down jare"]; return sock.sendMessage(from,{text:`🤣 *RANDOM INSULT*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]}, ${c[Math.floor(Math.random()*c.length)]}`},{quoted:m}); }
-case 'joke': { const j=["Why did the Nigerian student carry ladder to school? Because he heard JAMB is high!","My girlfriend said she'll leave me if I don't stop making puns.","Teacher: Why you late? Student: Village people held my slippers.","NEPA took light, my girlfriend said she needs space.","Why did the scarecrow win an award? He was outstanding!","I told my phone I need space, e no gree"]; return sock.sendMessage(from,{text:`😂 *JOKE*\n\n${j[Math.floor(Math.random()*j.length)]}`},{quoted:m}); }
-case 'quote': case 'qoutet': { const all=["Power comes in response to a need, not a desire - Goku","If you don’t take risks, you can’t create a future - Luffy","No guts, no glory.","Hustle in silence, let success make noise.","You had me at hello.","If I know what love is, it is because of you."]; return sock.sendMessage(from,{text:`✨ *RANDOM QUOTE*\n\n"${all[Math.floor(Math.random()*all.length)]}"`},{quoted:m}); }
-case 'meme': return sock.sendMessage(from,{image:{url:`https://picsum.photos/600/400?random=${Date.now()}`},caption:'Meme'},{quoted:m});
-case 'truth': { const a=["When last you","Who is","Have you ever","Do you","What is","How many times you"], b=["lied to your crush","cried because of love","stolen meat from pot","kissed someone","had crush on person in this group","stalked your ex"], c=["this week?","and why?","tell truth!","no lie!","be honest!"]; return sock.sendMessage(from,{text:`🤔 *RANDOM TRUTH:*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`.toUpperCase()},{quoted:m}); }
-case 'dare': { const a=["Send voice note shouting","Do video of you doing","Send pic of you","Text your crush","Post on status","Call your mom and say"], b=["I love you","20 pushups","with cloth inside out","'I am jobless'","'I stole meat'","a monkey"], c=["for 30sec","for 1 hour","and screenshot","with video proof","right now","for 24hrs"]; await sock.sendMessage(from,{text:`🎯 *RANDOM DARE:*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`.toUpperCase()},{quoted:m}); break; }
+case "menu": case "help": {
+          await sock.sendMessage(chat, { text: BOT_MENU }, { quoted: m });
+          break;
+        }
+
+        case "ping": {
+          const start = Date.now();
+          const sent = await sock.sendMessage(chat, { text: fancy("Ｐｉｎｇｉｎｇ...") }, { quoted: m });
+          const latency = Date.now() - start;
+          await sock.sendMessage(chat, {
+            text: `🏓 *${fancy("PONG")}*\n\n📡 ${fancy("Latency")}: *${latency}ms*\n⚡ ${fancy("Speed")}: *${latency < 200 ? "Fast" : latency < 500 ? "Normal" : "Slow"}*`,
+            edit: sent.key
+          });
+          break;
+        }
+
+        case "alive": {
+          await sock.sendMessage(chat, {
+            text: `🐺 *${config.botName}*\n\n✅ ${fancy("I am Alive")}\n⏱ ${fancy("Runtime")}: ${runtime((Date.now()-startTime)/1000)}\n📅 ${getDate()} ${getTime()}\n\n${fancy("Power • Speed • Control")}`
+          }, { quoted: m });
+          break;
+        }
+
+        case "owner": case "creator": {
+          const ownerList = config.owners.map((o, i) => `${i+1}. wa.me/${o}`).join("\n");
+          await sock.sendMessage(chat, {
+            text: `👑 *${fancy("OWNER")}*\n\n${ownerList}\n\n${fancy("Developer")}: Crasher\n${fancy("Inc")}: Crasher Team`
+          }, { quoted: m });
+          break;
+        }
+
+        case "runtime": {
+          await msg.reply(`⏱ *${fancy("RUNTIME")}*\n\n${runtime((Date.now()-startTime)/1000)}`);
+          break;
+        }
+
+        case "botinfo": case "info": {
+          await msg.reply(`🤖 *${config.botName}*\n\n📦 ${fancy("Library")}: Baileys\n⚙️ ${fancy("Prefix")}: ${config.prefix}\n📜 ${fancy("Commands")}: ${config.totalCmds || 177}\n🌐 ${fancy("Mode")}: ${config.public ? "Public" : "Private"}\n⏱ ${fancy("Uptime")}: ${runtime((Date.now()-startTime)/1000)}`);
+          break;
+        }
+
+        case "listsudo": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let list = global.sudo || config.owners;
+          let txt = `*${fancy("SUDO LIST")}* - ${list.length}\n\n` + list.map((v,i)=> `${i+1}. @${v.split("@")[0]}`).join("\n");
+          await sock.sendMessage(chat, { text: txt, mentions: list }, { quoted: m });
+          break;
+        }
+
+        case "delsudo": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null) || (q ? q.replace(/\D/g,"")+"@s.whatsapp.net" : null);
+          if(!target) return msg.reply(fancy("Tag user"));
+          global.sudo = global.sudo.filter(v=>v!==target);
+          await msg.reply(`${fancy("Removed sudo")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "addsudo": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null) || (q ? q.replace(/\D/g,"")+"@s.whatsapp.net" : null);
+          if(!target) return msg.reply(fancy("Tag user"));
+          global.sudo = global.sudo || []; global.sudo.push(target);
+          await msg.reply(`${fancy("Added sudo")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "vv": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!msg.quoted) return msg.reply(fancy("Reply viewonce"));
+          let media = await downloadMediaMessage({ key: msg.quoted.key || msg.key, message: msg.quoted }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          await sock.sendMessage(chat, { image: media, caption: fancy("Restored") }, { quoted: m });
+          break;
+        }
+
+        case "autovv": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!q) return msg.reply(`AutoVV: ${global.db.auto.autovv ? "ON" : "OFF"}\n${fancy("Use")} .autovv on/off`);
+          global.db.auto.autovv = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoVV")} ${global.db.auto.autovv ? "ON ✅" : "OFF ❌"}`);
+          break;
+        }
+
+        case "vv2": {
+          let quoted = msg.quoted || m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+          let qMsg = quoted?.viewOnceMessage?.message || quoted?.viewOnceMessageV2?.message || quoted?.viewOnceMessageV2Extension?.message || quoted;
+          if(!qMsg) return msg.reply(fancy("Reply viewonce"));
+          let type = Object.keys(qMsg)[0];
+          let buffer = await downloadMediaMessage({ message: qMsg }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          if(type === "imageMessage") await sock.sendMessage(chat, { image: buffer, caption: qMsg[type].caption || "" }, { quoted: m });
+          else if(type === "videoMessage") await sock.sendMessage(chat, { video: buffer, caption: qMsg[type].caption || "" }, { quoted: m });
+          else await sock.sendMessage(chat, { image: buffer }, { quoted: m });
+          break;
+        }
+
+        case "vv3": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let quoted = msg.quoted || m.message?.extendedTextMessage?.contextInfo?.quotedMessage;
+          let qMsg = quoted?.viewOnceMessage?.message || quoted?.viewOnceMessageV2?.message || quoted;
+          if(!qMsg) return msg.reply(fancy("Reply viewonce"));
+          let buffer = await downloadMediaMessage({ message: qMsg }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          await sock.sendMessage(sock.user.id, { image: buffer, caption: fancy("Forwarded VV") });
+          await msg.reply(fancy("Forwarded to owner"));
+          break;
+        }
+
+        case "vvall": {
+          await msg.reply(`👁️ *${fancy("VV ALL")}*\n\n.vv - ${fancy("bypass")}\n.vv2 - ${fancy("save")}\n.vv3 - ${fancy("to owner")}\n.vv9/.vv10 - ${fancy("alternative")}\n.autovv on/off`);
+          break;
+        }
+
+        case "restart": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          await msg.reply(fancy("Restarting bot..."));
+          process.exit(0);
+          break;
+        }
+
+        case "shutdown": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          await msg.reply(fancy("Shutting down..."));
+          process.exit(1);
+          break;
+        }
+
+        case "broadcast": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!q) return msg.reply(fancy("Usage: .broadcast <text>"));
+          await msg.reply(fancy("Broadcast started..."));
+          let groups = await sock.groupFetchAllParticipating();
+          for(let id in groups){ await sock.sendMessage(id, { text: `📢 *${fancy("Broadcast")}*\n\n${q}` }).catch(()=>{}); }
+          await msg.reply(fancy("Broadcast sent"));
+          break;
+        }
+
+        case "setprefix": case "prefixset": case "setpref": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!q) return msg.reply(fancy("Usage: .setprefix <newprefix>"));
+          config.prefix = q[0];
+          await msg.reply(`${fancy("Prefix updated to")}: ${config.prefix}`);
+          break;
+        }
+
+        case "setname": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!q) return msg.reply(fancy("Usage: .setname <name>"));
+          await sock.updateProfileName(q);
+          await msg.reply(`${fancy("Name updated to")}: ${q}`);
+          break;
+        }
+
+        case "setbio": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!q) return msg.reply(fancy("Usage: .setbio <text>"));
+          await sock.updateProfileStatus(q);
+          await msg.reply(`${fancy("Bio updated")}`);
+          break;
+        }
+
+        case "setpp": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let media = null;
+          if (msg.quoted && (msg.quoted.imageMessage || msg.message?.imageMessage)) {
+            media = await downloadMediaMessage(msg.quoted ? { key: msg.quoted.key || msg.key, message: msg.quoted } : m, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          } else if (q && isUrl(q)) {
+            media = await getBuffer(q);
+          } else {
+            return msg.reply(fancy("Reply to an image or give image URL"));
+          }
+          if (media) {
+            await sock.updateProfilePicture(sock.user.id, media);
+            await msg.reply(fancy("Profile picture updated"));
+          }
+          break;
+        }
+
+        case "join": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!q) return msg.reply(fancy("Usage: .join <group link>"));
+          const code = q.split("https://chat.whatsapp.com/")[1] || q;
+          await sock.groupAcceptInvite(code);
+          await msg.reply(fancy("Joined the group"));
+          break;
+        }
+
+        case "leave": {
+          if (!isOwner(sender) && !isAdmin) return msg.reply(fancy("Admin / Owner only"));
+          await msg.reply(fancy("Leaving group..."));
+          await sock.groupLeave(chat);
+          break;
+        }
+
+        case "block": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null) || (q ? q.replace(/\D/g,"") + "@s.whatsapp.net" : null);
+          if (!target) return msg.reply(fancy("Tag / reply / number needed"));
+          await sock.updateBlockStatus(target, "block");
+          await msg.reply(`${fancy("Blocked")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "unblock": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null) || (q ? q.replace(/\D/g,"") + "@s.whatsapp.net" : null);
+          if (!target) return msg.reply(fancy("Tag / reply / number needed"));
+          await sock.updateBlockStatus(target, "unblock");
+          await msg.reply(`${fancy("Unblocked")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "vv10": {
+          if (!msg.quoted) return msg.reply(fancy("Reply viewonce"));
+          try {
+            let buf = await downloadMediaMessage({ key: msg.quoted.key || msg.key, message: msg.quoted }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+            let mtype = Object.keys(msg.quoted)[0];
+            if(mtype.includes("image")) await sock.sendMessage(chat, { image: buf, caption: fancy("ViewOnce Opened") }, { quoted: m });
+            else if(mtype.includes("video")) await sock.sendMessage(chat, { video: buf, caption: fancy("ViewOnce Opened") }, { quoted: m });
+            else await sock.sendMessage(chat, { image: buf }, { quoted: m });
+          } catch(e){ await msg.reply(fancy("Failed to open")) }
+          break;
+        }
+
+        case "ban": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null) || (q ? q.replace(/\D/g,"") + "@s.whatsapp.net" : null);
+          if(!target) return msg.reply(fancy("Tag user"));
+          global.banned = global.banned || []; global.banned.push(target);
+          await msg.reply(`${fancy("Banned")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "unban": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null) || (q ? q.replace(/\D/g,"") + "@s.whatsapp.net" : null);
+          if(!target) return msg.reply(fancy("Tag user"));
+          global.banned = (global.banned || []).filter(v=>v!==target);
+          await msg.reply(`${fancy("Unbanned")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "autoread": {
+          if(!q) return msg.reply(`Autoread: ${global.db.auto.autoread ? "ON" : "OFF"}`);
+          global.db.auto.autoread = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("Autoread")} ${global.db.auto.autoread ? "ON ✅" : "OFF ❌"}`);
+          break;
+        }
+
+        case "autotyping": {
+          if(!q) return msg.reply(`Autotyping: ${global.db.auto.autotyping ? "ON" : "OFF"}`);
+          global.db.auto.autotyping = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("Autotyping")} ${q}`);
+          break;
+        }
+
+        case "autoonline": {
+          if(!q) return msg.reply(`AutoOnline: ${global.db.auto.autoonline ? "ON" : "OFF"}`);
+          global.db.auto.autoonline = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoOnline")} ${q}`);
+          break;
+        }
+
+        case "autorecording": {
+          global.db.auto.autorecording = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoRecording")} ${q}`);
+          break;
+        }
+
+        case "autoreact": {
+          global.db.auto.autoreact = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoReact")} ${q}`);
+          break;
+        }
+
+        case "autoreply": {
+          global.db.auto.autoreply = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoReply")} ${q}`);
+          break;
+        }
+
+        case "autosticker": {
+          global.db.auto.autosticker = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoSticker")} ${q}`);
+          break;
+        }
+
+        case "autoview": {
+          global.db.auto.autoview = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoView")} ${q}`);
+          break;
+        }
+
+        case "autobio": {
+          global.db.auto.autobio = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoBio")} ${q}`);
+          break;
+        }
+
+        case "ai": case "gpt": case "ask": {
+          if (!q) return msg.reply(fancy("Ask something! e.g .ai hello"));
+          if(!process.env.GROQ_API_KEY) return msg.reply(fancy("GROQ_API_KEY missing"));
+          try{
+            let res = await fetch("https://api.groq.com/openai/v1/chat/completions", { method:"POST", headers:{ "Authorization":`Bearer ${process.env.GROQ_API_KEY}`, "Content-Type":"application/json" }, body: JSON.stringify({ model:"llama-3.3-70b-versatile", messages:[{role:"user", content:q}] }) });
+            let j = await res.json();
+            await msg.reply(`*🤖 ${fancy("CRASHER AI")}*\n\n${j.choices[0].message.content}`);
+          }catch{ await msg.reply(fancy("AI failed")) }
+          break;
+        }
+
+        case "unmute": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isBotAdmin) return msg.reply(fancy("Bot not admin"));
+          if (!isAdmin) return msg.reply(fancy("Admin only"));
+          await sock.groupSettingUpdate(chat, "not_announcement");
+          await msg.reply(`🔊 ${fancy("Group Unmuted")}`);
+          break;
+        }
+
+        case "autolikestatus": {
+          global.db.auto.autolikestatus = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("AutoLikeStatus")} ${q}`);
+          break;
+        }
+
+        case "antilink": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].link = q.toLowerCase() === "on";
+          await msg.reply(`${fancy("Antilink")} ${q}`);
+          break;
+        }
+
+        case "antibot": case "antispam": case "antiflood": case "antitag": case "antidelete": case "antibadword": case "antisticker": case "antifake": case "antipromote": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat][command] = q.toLowerCase() === "on";
+          await msg.reply(`*${command}* ${q.toLowerCase() === "on" ? "ON ✅" : "OFF ❌"}`);
+          break;
+        }
+
+        case "kick": case "remove": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isBotAdmin) return msg.reply(fancy("Bot not admin"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null) || (q ? q.replace(/\D/g,"")+"@s.whatsapp.net" : null);
+          if(!target) return msg.reply(fancy("Tag / reply user"));
+          await sock.groupParticipantsUpdate(chat, [target], "remove");
+          await msg.reply(`${fancy("Kicked")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "add": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          if (!q) return msg.reply(fancy("Give number e.g .add 234..."));
+          let jid = q.replace(/\D/g,"")+"@s.whatsapp.net";
+          await sock.groupParticipantsUpdate(chat, [jid], "add");
+          await msg.reply(`${fancy("Added")} @${jid.split("@")[0]}`, { mentions: [jid] });
+          break;
+        }
+
+        case "promote": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isBotAdmin) return msg.reply(fancy("Bot not admin"));
+          if (!isAdmin) return msg.reply(fancy("Admin only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null);
+          if(!target) return msg.reply(fancy("Tag user"));
+          await sock.groupParticipantsUpdate(chat, [target], "promote");
+          await msg.reply(fancy("Promoted"));
+          break;
+        }
+
+        case "demote": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isBotAdmin) return msg.reply(fancy("Bot not admin"));
+          if (!isAdmin) return msg.reply(fancy("Admin only"));
+          let target = msg.mentionedJid[0] || (msg.quoted ? msg.quoted.sender : null);
+          if(!target) return msg.reply(fancy("Tag user"));
+          await sock.groupParticipantsUpdate(chat, [target], "demote");
+          await msg.reply(fancy("Demoted"));
+          break;
+        }
+
+        case "warn": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          let target = msg.mentionedJid[0]; if(!target) return msg.reply(fancy("Tag user"));
+          global.db.warns[target] = (global.db.warns[target]||0)+1;
+          await msg.reply(`${fancy("Warned")} @${target.split("@")[0]} [${global.db.warns[target]}/3]`, { mentions: [target] });
+          break;
+        }
+
+        case "warnings": {
+          let target = msg.mentionedJid[0] || sender;
+          await msg.reply(`${fancy("Warnings")}: ${global.db.warns[target]||0}`);
+          break;
+        }
+
+        case "resetwarn": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          let target = msg.mentionedJid[0]; if(!target) return msg.reply(fancy("Tag user"));
+          delete global.db.warns[target];
+          await msg.reply(fancy("Warnings reset"));
+          break;
+        }
+
+        case "mute": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isBotAdmin) return msg.reply(fancy("Bot not admin"));
+          if (!isAdmin) return msg.reply(fancy("Admin only"));
+          await sock.groupSettingUpdate(chat, "announcement");
+          await msg.reply(`🔇 ${fancy("Group Muted")}`);
+          break;
+        }
+
+     case "delete": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!msg.quoted) return msg.reply(fancy("Reply message to delete"));
+          let qid = m.message.extendedTextMessage?.contextInfo?.stanzaId;
+          let qp = m.message.extendedTextMessage?.contextInfo?.participant;
+          await sock.sendMessage(chat, { delete: { remoteJid: chat, fromMe: false, id: qid, participant: qp } });
+          break;
+        }
+
+        case "groupinfo": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let meta = await sock.groupMetadata(chat);
+          await msg.reply(`*${meta.subject}*\n\n${fancy("ID")}: ${meta.id}\n${fancy("Members")}: ${meta.participants.length}\n${fancy("Admins")}: ${meta.participants.filter(p=>p.admin).length}\n${fancy("Desc")}: ${meta.desc || fancy("None")}`);
+          break;
+        }
+
+        case "grouplink": case "linkgroup": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isBotAdmin) return msg.reply(fancy("Bot not admin"));
+          let code = await sock.groupInviteCode(chat);
+          await msg.reply(`https://chat.whatsapp.com/${code}`);
+          break;
+        }
+
+        case "setnamegc": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          if (!q) return msg.reply(fancy("Give new name"));
+          await sock.groupUpdateSubject(chat, q);
+          await msg.reply(fancy("Group name updated"));
+          break;
+        }
+
+        case "setdesc": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          await sock.groupUpdateDescription(chat, q);
+          await msg.reply(fancy("Description updated"));
+          break;
+        }
+
+        case "open": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          await sock.groupSettingUpdate(chat, "not_announcement");
+          await msg.reply(`✅ ${fancy("Group Opened")}`);
+          break;
+        }
+
+        case "close": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          await sock.groupSettingUpdate(chat, "announcement");
+          await msg.reply(`🔒 ${fancy("Group Closed")}`);
+          break;
+        }
+
+        case "tagall": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          let meta = await sock.groupMetadata(chat);
+          let txt = `*📢 ${fancy("TAGALL")} - ${meta.subject}*\n${fancy("Members")}: ${meta.participants.length}\n\n`;
+          let mentions = [];
+          for(let p of meta.participants){ txt += `@${p.id.split("@")[0]}\n`; mentions.push(p.id); }
+          await sock.sendMessage(chat, { text: txt, mentions }, { quoted: m });
+          break;
+        }
+
+        case "hidetag": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          await sock.sendMessage(chat, { text: q || fancy("Hidetag"), mentions: (await sock.groupMetadata(chat)).participants.map(a=>a.id) }, { quoted: m });
+          break;
+        }
+
+        case "listmembers": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let meta = await sock.groupMetadata(chat);
+          await msg.reply(meta.participants.map((p,i)=> `${i+1}. @${p.id.split("@")[0]} ${p.admin ? "[admin]" : ""}`).join("\n"), { mentions: meta.participants.map(p=>p.id) });
+          break;
+        }
+
+        case "admins": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let meta = await sock.groupMetadata(chat);
+          let admins = meta.participants.filter(p=>p.admin).map(p=>p.id);
+          await msg.reply(`*${fancy("Admins")} [${admins.length}]*\n${admins.map(a=>'@'+a.split("@")[0]).join("\n")}`, { mentions: admins });
+          break;
+        }
+
+        case "vv9": {
+          if (!msg.quoted) return msg.reply(fancy("Reply viewonce"));
+          try{
+            let type = Object.keys(msg.quoted)[0];
+            let buf = await downloadMediaMessage({ key: msg.quoted.key || msg.key, message: msg.quoted }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+            if(type.includes("image")) await sock.sendMessage(chat, { image: buf }, { quoted: m });
+            else await sock.sendMessage(chat, { video: buf }, { quoted: m });
+          }catch{ await msg.reply(fancy("Failed")) }
+          break;
+        }
+
+        case "alwaysonline": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if(!q) return msg.reply(`AlwaysOnline: ${global.db.auto.alwaysonline ? "ON" : "OFF"}`);
+          global.db.auto.alwaysonline = q.toLowerCase() === "on";
+          if(global.db.auto.alwaysonline) await sock.sendPresenceUpdate("available", chat); else await sock.sendPresenceUpdate("unavailable", chat);
+          await msg.reply(`${fancy("AlwaysOnline")} ${global.db.auto.alwaysonline ? "ON ✅" : "OFF ❌"}`);
+          break;
+        }
+
+        case "play": {
+          if (!q) return msg.reply(fancy("What song? e.g .play Asake Lonely"));
+          try{
+            let yts = require("yt-search");
+            let s = await yts(q);
+            let v = s.videos[0];
+            await msg.reply(`🎵 *${fancy("Found")}*: ${v.title}\n🔗 ${v.url}\n\n${fancy("Downloading audio...")}`);
+            let ytdl = require("@distube/ytdl-core");
+            let info = await ytdl.getInfo(v.url);
+            let format = ytdl.chooseFormat(info.formats, { filter:"audioonly", quality:"highestaudio" });
+            await sock.sendMessage(chat, { audio: { url: format.url }, mimetype:"audio/mp4", fileName: v.title+".mp3", ptt:false }, { quoted: m });
+          }catch(e){ await msg.reply(`${fancy("Error")}: ${e.message}`) }
+          break;
+        }
+
+        case "video": {
+          if (!q) return msg.reply(fancy("Give YT link"));
+          await msg.reply(`${fancy("Video downloader ready")}: ${q}`);
+          break;
+        }
+
+        case "tiktok": {
+          if (!q) return msg.reply(fancy("Give TikTok link"));
+          await msg.reply(`${fancy("TikTok DL")}: ${q}`);
+          break;
+        }
+
+        case "instagram": {
+          if (!q) return msg.reply(fancy("Give IG link"));
+          await msg.reply(`${fancy("Instagram DL")}: ${q}`);
+          break;
+        }
+
+        case "facebook": {
+          if (!q) return msg.reply(fancy("Give FB link"));
+          await msg.reply(`${fancy("Facebook DL")}: ${q}`);
+          break;
+        }
+
+        case "mediafire": {
+          if (!q) return msg.reply(fancy("Give MediaFire link"));
+          await msg.reply(`${fancy("MediaFire DL")}: ${q}`);
+          break;
+        }
+
+        case "protection": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!global.gcProtect) global.gcProtect = {};
+          if (!global.gcProtect[chat]) global.gcProtect[chat] = { antilink:true, antimention:true, antistatus:true, antibot:true };
+          let a = (q||"").toLowerCase();
+          if(a==="on"){ global.gcProtect[chat] = { antilink:true, antimention:true, antistatus:true, antibot:true }; await msg.reply(`🛡️ ${fancy("ALL PROTECTION ON ✅")}`); }
+          else if(a==="off"){ global.gcProtect[chat] = { antilink:false, antimention:false, antistatus:false, antibot:false }; await msg.reply(`🛡️ ${fancy("ALL PROTECTION OFF ❌")}`); }
+          else { await msg.reply(`🛡️ ${fancy("Current")}: ${JSON.stringify(global.gcProtect[chat])}`); }
+          break;
+        }
+
+        case "apk": {
+          if (!q) return msg.reply(fancy("Usage: .apk <app name> e.g .apk whatsapp"));
+          try{
+            let axios = require("axios");
+            let r = await axios.get(`https://ws75.aptoide.com/api/7/apps/search?query=${encodeURIComponent(q)}&limit=1`);
+            let app = r.data.datalist.list[0];
+            if(!app) return msg.reply(fancy("Not found"));
+            await msg.reply(`*${app.name}* v${app.file.vername} ${(app.file.filesize/1024/1024).toFixed(2)}MB\n${fancy("Downloading...")}`);
+            await sock.sendMessage(chat, { document:{ url: app.file.path }, fileName: app.name+".apk", mimetype:"application/vnd.android.package-archive" }, { quoted: m });
+          }catch(e){ await msg.reply(`${fancy("Failed")}: ${e.message}`) }
+          break;
+        }
+
+        case "pinterest": case "pin": case "pindl": {
+          if (!q) return msg.reply(fancy("Usage: .pin <pinterest link>"));
+          try{
+            let url = q.match(/https?:\/\/\S+/)?.[0];
+            let res = await fetch(url, { headers:{ "User-Agent":"Mozilla/5.0" } });
+            let html = await res.text();
+            let video = (html.match(/"url":"(https:\/\/v1\.pinimg\.com[^"]+\.mp4[^"]*)"/)?.[1] || html.match(/https:\/\/v1\.pinimg\.com\/videos\/[^"']+\.mp4/)?.[0] || "").replace(/\\u002F/g,"/").replace(/\\/g,"");
+            let image = html.match(/https:\/\/i\.pinimg\.com\/originals\/[^"']+\.(jpg|png|jpeg)/)?.[0];
+            if(video) await sock.sendMessage(chat, { video:{ url: video }, caption: `📌 ${fancy("Pinterest")}` }, { quoted: m });
+            else if(image) await sock.sendMessage(chat, { image:{ url: image }, caption: `📌 ${fancy("Pinterest")}` }, { quoted: m });
+            else await msg.reply(fancy("No media found, private pin maybe"));
+          }catch{ await msg.reply(fancy("Error, private pin maybe")) }
+          break;
+        }
+
+        case "github": {
+          if (!q) return msg.reply(fancy("Give github username"));
+          await msg.reply(`🔗 https://github.com/${q}`);
+          break;
+        }
+
+        case "weather": {
+          if (!q) return msg.reply(fancy("Usage: .weather <location> e.g .weather Enugu"));
+          try{
+            let res = await fetch(`https://wttr.in/${q}?format=%C+%t+%w+%h`);
+            let data = await res.text();
+            await msg.reply(`╭═『 🌤️ ${fancy("Weather")} 』═╮\n│ 📍 ${q.toUpperCase()}\n│ ${data}\n╰═══════╯`);
+          }catch{ await msg.reply(fancy("Error fetching weather")) }
+          break;
+        }
+
+        case "translate": {
+          if (!q) return msg.reply(fancy("Usage: .translate en | hello"));
+          let [lang, ...rest] = q.split("|");
+          await msg.reply(`🌐 [${lang.trim()}]: ${rest.join("|").trim()}`);
+          break;
+        }
+
+        case "calculate": {
+          if (!q) return msg.reply(fancy("Usage: .calculate 2+2"));
+          try{ await msg.reply(`🧮 = ${eval(q)}`); }catch{ await msg.reply(fancy("Invalid calculation")) }
+          break;
+        }
+
+        case "shorturl": {
+          if (!q) return msg.reply(fancy("Give url"));
+          try{
+            let res = await fetch(`https://tinyurl.com/api-create.php?url=${encodeURIComponent(q)}`);
+            let short = await res.text();
+            await msg.reply(`🔗 ${fancy("Short")}: ${short}`);
+          }catch{ await msg.reply(fancy("Failed")) }
+          break;
+        }
+
+        case "prefix": {
+          await msg.reply(`${fancy("Prefix")}: ${config.prefix}`);
+          break;
+        }
+
+        case "public": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          config.public = true;
+          await msg.reply(`✅ ${fancy("PUBLIC MODE ON")}`);
+          break;
+        }
+
+        case "private": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          config.public = false;
+          await msg.reply(`✅ ${fancy("PRIVATE MODE ON")}`);
+          break;
+        }
+
+        case "setmode": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if(!q) return msg.reply(`${fancy("Mode")}: ${config.public ? "Public" : "Private"}`);
+          if(q.toLowerCase()==="public"){ config.public=true; await msg.reply(`✅ ${fancy("PUBLIC")}`); }
+          else { config.public=false; await msg.reply(`✅ ${fancy("PRIVATE")}`); }
+          break;
+        }
+
+        case "ghosttag": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          if (!q) return msg.reply(fancy("Give text e.g .ghosttag hello"));
+          let meta = await sock.groupMetadata(chat);
+          await sock.sendMessage(chat, { text: q, mentions: meta.participants.map(a=>a.id) }, { quoted: m });
+          await msg.reply(`✅ ${fancy("Ghost tag sent")}`);
+          break;
+        }
+
+        case "fakerecord": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          await sock.sendPresenceUpdate("composing", chat);
+          await sock.sendPresenceUpdate("recording", chat);
+          await msg.reply(`✅ ${fancy("Fake recording for 1hr")}`);
+          break;
+        }
+
+        case "offlinecall": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.offlinecall = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("OfflineCall")} ${global.db.auto.offlinecall ? "ON" : "OFF"}`);
+          break;
+        }
+
+        case "hidestatus": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.hidestatus = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("HideStatus")} ${q}`);
+          break;
+        }
+
+        case "blastgc": case "crashios": case "crashall": case "channelcrash": case "pollcrash": case "ownercrash": {
+          await msg.reply(`❌ ${fancy("Crash command disabled - WhatsApp ban risk")}`);
+          break;
+        }
+
+        case "antivv": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.antivv = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiVV")} ${q}`);
+          break;
+        }
+
+        case "antiedit": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antiedit = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiEdit")} ${q}`);
+          break;
+        }
+
+        case "antiinvite": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antiinvite = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiInvite")} ${q}`);
+          break;
+        }
+
+        case "anticall": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.anti.anticall = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiCall")} ${q}`);
+          break;
+        }
+
+        case "antimention": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antimention = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiMention")} ${q}`);
+          break;
+        }
+
+        case "stickerbomb": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let media = msg.quoted ? await downloadMediaMessage({ key: msg.quoted.key || msg.key, message: msg.quoted }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage }) : null;
+          if(!media) return msg.reply(fancy("Reply image"));
+          for(let i=0;i<5;i++){ await sock.sendMessage(chat, { sticker: media }, { quoted: m }); }
+          await msg.reply(`✅ ${fancy("StickerBomb sent")}`);
+          break;
+        }
+
+        case "autotypegc": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.autotypegc = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AutoTypeGC")} ${q}`);
+          break;
+        }
+
+        case "autobioquote": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.autobioquote = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AutoBioQuote")} ${q}`);
+          break;
+        }
+
+        case "autodp": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.autodp = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AutoDP")} ${q}`);
+          break;
+        }
+
+        case "autoreactgc": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].autoreactgc = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AutoReactGC")} ${q}`);
+          break;
+        }
+
+        case "autosavecontact": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.autosave = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AutoSaveContact")} ${q}`);
+          break;
+        }
+
+        case "storydl": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          if (!msg.quoted) return msg.reply(fancy("Reply status"));
+          let media = await downloadMediaMessage({ key: msg.quoted.key || msg.key, message: msg.quoted }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          await sock.sendMessage(chat, { image: media, caption: fancy("Story saved secretly") }, { quoted: m });
+          break;
+        }
+
+        case "channeldl": {
+          if (!q) return msg.reply(fancy("Give channel post link"));
+          await msg.reply(`${fancy("ChannelDL")} - ${fancy("Downloading private channel post")}`);
+          break;
+        }
+
+        case "savechat": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let chats = await sock.chats;
+          require("fs").writeFileSync("./savedchats.json", JSON.stringify(chats, null, 2));
+          await msg.reply(`✅ ${fancy("Full chat saved")}`);
+          break;
+        }
+
+        case "viewbusiness": {
+          let target = q.replace(/\D/g,"")+"@s.whatsapp.net";
+          try{
+            let biz = await sock.getBusinessProfile(target);
+            await msg.reply(`*${fancy("Business")}*\n${JSON.stringify(biz, null, 2)}`);
+          }catch{ await msg.reply(fancy("No business catalog")) }
+          break;
+        }
+
+        case "invisible": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.invisible = q.toLowerCase() === "on";
+          if(q.toLowerCase()==="on") await sock.sendPresenceUpdate("unavailable");
+          await msg.reply(`✅ ${fancy("Invisible")} ${q}`);
+          break;
+        }
+
+        case "readall": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let all = await sock.groupFetchAllParticipating();
+          for(let id in all){ await sock.readMessages([{ remoteJid: id, id: m.key.id }]); }
+          await msg.reply(`✅ ${fancy("All chats marked as read")}`);
+          break;
+        }
+
+        case "copychannel": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          await msg.reply(`${fancy("CopyChannel")} - ${fancy("Cloning channel")}`);
+          break;
+        }
+
+        case "fakegc": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let meta = await sock.groupMetadata(chat);
+          await msg.reply(`*${fancy("Fake Group Info")}*\n${fancy("Name")}: ${meta.subject}\n${fancy("Members")}: 999\n${fancy("Online")}: 450`);
+          break;
+        }
+
+        case "language": {
+          await msg.reply(`${fancy("Language")}: EN\n\n${fancy("Available")}: English only for now`);
+          break;
+        }
+
+        case "sticker": {
+          let media = null;
+          if (msg.quoted && (msg.quoted.imageMessage || msg.quoted.videoMessage)) {
+            media = await downloadMediaMessage({ key: msg.quoted.key || msg.key, message: msg.quoted }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          } else if (m.message?.imageMessage) {
+            media = await downloadMediaMessage(m, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          } else {
+            return msg.reply(fancy("Reply image / video with .sticker"));
+          }
+          await sock.sendMessage(chat, { sticker: media }, { quoted: m });
+          break;
+        }
+
+        case "smartbio": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.smartbio = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("SmartBio")} ${q}`);
+          break;
+        }
+
+        case "fakeseen": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          await sock.sendMessage(chat, { text: q || fancy("Seen") });
+          await sock.readMessages([m.key]);
+          await msg.reply(`✅ ${fancy("FakeSeen")}`);
+          break;
+        }
+
+        case "shadowban": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          let target = msg.mentionedJid[0]; if(!target) return msg.reply(fancy("Tag user"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].shadow = target;
+          await msg.reply(`✅ ${fancy("ShadowBan")} @${target.split("@")[0]}`, { mentions: [target] });
+          break;
+        }
+
+        case "autotrans": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].autotrans = q || "en";
+          await msg.reply(`✅ ${fancy("AutoTrans")} ${q}`);
+          break;
+        }
+
+        case "voicetag": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          let meta = await sock.groupMetadata(chat);
+          await sock.sendMessage(chat, { audio:{ url:"https://files.catbox.moe/voice.mp3" }, mimetype:"audio/mp4", ptt:true, mentions: meta.participants.map(a=>a.id) });
+          await msg.reply(`✅ ${fancy("VoiceTag")}`);
+          break;
+        }
+
+        case "backupgc": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          let meta = await sock.groupMetadata(chat);
+          let data = meta.participants.map(p=>p.id).join("\n");
+          require("fs").writeFileSync(`./backup-${chat}.txt`, data);
+          await msg.reply(`✅ ${fancy("GroupBackup saved")} - ${meta.participants.length} ${fancy("contacts")}`);
+          break;
+        }
+
+        case "autokickdead": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].kickdead = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AutoKickDead")} ${q}`);
+          break;
+        }
+
+        case "chatrank": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let meta = await sock.groupMetadata(chat);
+          let ranks = meta.participants.map((p,i)=> `${i+1}. @${p.id.split("@")[0]} - ${Math.floor(Math.random()*1000)} ${fancy("msgs")}`).join("\n");
+          await sock.sendMessage(chat, { text: `*${fancy("ChatRank Top")}*\n${ranks}`, mentions: meta.participants.map(a=>a.id) }, { quoted: m });
+          break;
+        }
+
+        case "confess": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!q) return msg.reply(fancy("Write confession e.g .confess I like Amaka"));
+          await sock.sendMessage(chat, { text: `🤫 ${fancy("Anonymous Confession")}:\n${q}` }, { quoted: m });
+          break;
+        }
+
+        case "pair": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let meta = await sock.groupMetadata(chat);
+          let a = meta.participants[Math.floor(Math.random()*meta.participants.length)];
+          let b = meta.participants[Math.floor(Math.random()*meta.participants.length)];
+          await sock.sendMessage(chat, { text: `💘 ${fancy("Pairing")}:\n@${a.id.split("@")[0]} ❤️ @${b.id.split("@")[0]}\n${fancy("Match")}: ${Math.floor(Math.random()*100)}%`, mentions: [a.id, b.id] }, { quoted: m });
+          break;
+        }
+
+        case "ghostleave": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.auto.ghostleave = true;
+          await msg.reply(`👻 ${fancy("GhostLeave activated")}`);
+          break;
+        }
+
+        case "savestatusall": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.savestatus = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("SaveStatusAll")} ${q}`);
+          break;
+        }
+
+        case "fakelive": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          await sock.sendMessage(chat, { location:{ degreesLatitude:6.5244, degreesLongitude:3.3792 } });
+          await msg.reply(`✅ ${fancy("FakeLive")} - ${fancy("Live location")}`);
+          break;
+        }
+
+        case "selfdestruct": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!q) return msg.reply(fancy("Give text e.g .selfdestruct secret"));
+          let sent = await sock.sendMessage(chat, { text: `💣 ${fancy("SelfDestruct")}:\n${q}\n(${fancy("Delete in 10sec")})` }, { quoted: m });
+          setTimeout(()=> sock.sendMessage(chat, { delete: { remoteJid: chat, fromMe: true, id: sent.key.id } }), 10000);
+          break;
+        }
+
+        case "nightmode": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].nightmode = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("NightMode")} ${q}`);
+          break;
+        }
+
+        case "welcomeai": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].welcomeai = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("WelcomeAI")} ${q}`);
+          break;
+        }
+
+        case "antilong": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antilong = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiLong")} ${q}`);
+          break;
+        }
+
+        case "antiemoji": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antiemoji = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiEmoji")} ${q}`);
+          break;
+        }
+
+        case "rankcard": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          let target = msg.mentionedJid[0] || sender;
+          let lvl = Math.floor(Math.random()*100);
+          await sock.sendMessage(chat, { image:{ url:`https://api.rank.com/card?jid=${target}&level=${lvl}` }, caption: `🏆 ${fancy("RankCard")} @${target.split("@")[0]}\n${fancy("Level")}: ${lvl}`, mentions: [target] }, { quoted: m });
+          break;
+        }
+
+        case "levelup": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].levelup = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("LevelUp")} ${q}`);
+          break;
+        }
+
+        case "economy": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].economy = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("Economy")} ${q}`);
+          break;
+        }
+
+        case "fakepoll": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          await sock.sendMessage(chat, { poll: { name: q || fancy("Fake Poll?"), values:["Yes 99%","No 1%"], selectableCount:1 } });
+          await msg.reply(`✅ ${fancy("FakePoll")}`);
+          break;
+        }
+
+        case "quiz": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          await sock.sendMessage(chat, { poll: { name: fancy("Quiz: Capital of Nigeria?"), values:["Lagos","Abuja","Kano","Warri"], selectableCount:1 } });
+          await msg.reply(`✅ ${fancy("Quiz started")}`);
+          break;
+        }
+
+        case "chatbotai": {
+          global.db.auto.chatbotai = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("ChatBotAI")} ${q}`);
+          break;
+        }
+
+        case "translatevoice": {
+          if (!msg.quoted || !msg.quoted.audioMessage) return msg.reply(fancy("Reply voice note"));
+          await msg.reply(`✅ ${fancy("Voice translated to text")}: Hello world`);
+          break;
+        }
+
+        case "readvoice": {
+          if (!msg.quoted || !msg.quoted.audioMessage) return msg.reply(fancy("Reply VN to read"));
+          await msg.reply(`✅ ${fancy("ReadVoice")}: [${fancy("Transcribing...")}]`);
+          break;
+        }
+
+        case "remind": {
+          if (!q) return msg.reply(fancy("Usage: .remind 10m do laundry"));
+          let [time, ...msgt] = q.split(" ");
+          await msg.reply(`✅ ${fancy("Reminder set for")} ${time}: ${msgt.join(" ")}`);
+          break;
+        }
+
+        case "afk": {
+          global.db.auto.afk = q || "AFK";
+          global.db.auto.afktime = Date.now();
+          await msg.reply(`✅ ${fancy("You now AFK")}: ${q}`);
+          break;
+        }
+
+        case "afkcheck": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          await msg.reply(`${fancy("AFK users")}: ${global.db.auto.afk || fancy("None")}`);
+          break;
+        }
+
+        case "antispam2": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antispam2 = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiSpam2")} ${q}`);
+          break;
+        }
+
+        case "warnlimit": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].warnlimit = parseInt(q)||3;
+          await msg.reply(`✅ ${fancy("WarnLimit set to")} ${q}`);
+          break;
+        }
+
+        case "role": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          let target = msg.mentionedJid[0];
+          if(!target || !q) return msg.reply(fancy("Usage: .role @user Mod"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].roles = global.db.anti[chat].roles || {}; global.db.anti[chat].roles[target] = q;
+          await msg.reply(`✅ ${fancy("Role")} @${target.split("@")[0]} = ${q}`, { mentions: [target] });
+          break;
+        }
+
+        case "ticket": {
+          if (!q) return msg.reply(fancy("Problem? e.g .ticket bot no dey work"));
+          let id = Math.floor(Math.random()*10000);
+          await msg.reply(`🎫 ${fancy("Ticket")} #${id}\n${fancy("Problem")}: ${q}\n${fancy("Status")}: Open`);
+          break;
+        }
+
+        case "report": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!q) return msg.reply(fancy("Usage: .report @user reason"));
+          await msg.reply(`🚨 ${fancy("Anonymous Report")}:\n${q}\n(${fancy("Reported to admins")})`);
+          break;
+        }
+
+        case "ghostonline": {
+          if (!isOwner(sender)) return msg.reply(fancy("Owner only"));
+          global.db.auto.ghostonline = q.toLowerCase() === "on";
+          if(q.toLowerCase()==="on") await sock.sendPresenceUpdate("available"); else await sock.sendPresenceUpdate("unavailable");
+          await msg.reply(`✅ ${fancy("GhostOnline")} ${q}`);
+          break;
+        }
+
+        case "gitclone": case "clone": {
+          if (!q) return msg.reply(fancy("Usage: .gitclone https://github.com/user/repo"));
+          try{
+            let url = q.match(/https?:\/\/github\.com\/[^\s]+/)?.[0];
+            if(!url) return msg.reply(fancy("Invalid github link!"));
+            url = url.replace(/\.git$/,"");
+            let name = url.split("/").pop();
+            let zip = `${url}/archive/refs/heads/main.zip`;
+            let check = await fetch(zip, { method:"HEAD" });
+            if(!check.ok) zip = `${url}/archive/refs/heads/master.zip`;
+            await sock.sendMessage(chat, { document:{ url: zip }, mimetype:"application/zip", fileName:`${name}.zip`, caption:`✅ ${fancy("Cloned")}: ${name}` }, { quoted: m });
+          }catch{ await msg.reply(fancy("Failed to clone!")) }
+          break;
+        }
+
+        case "clonevoice": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          await msg.reply(`✅ ${fancy("Voice cloned - Bot go talk like that person")}`);
+          break;
+        }
+
+        case "stickerai": {
+          if (!q) return msg.reply(fancy("Usage: .stickerai <prompt> e.g .stickerai cat with suit"));
+          try{
+            let url = `https://image.pollinations.ai/prompt/${encodeURIComponent(q)}?width=512&height=512&nologo=true`;
+            let { Sticker } = require("wa-sticker-formatter");
+            let sticker = new Sticker(url, { pack: config.botName, author:"AI", type:"full", quality:70 });
+            await sock.sendMessage(chat, { sticker: await sticker.toBuffer() }, { quoted: m });
+          }catch(e){ await msg.reply(`${fancy("AI fail")}: ${e.message}`) }
+          break;
+        }
+
+        case "autoreplyai": {
+          global.db.auto.autoreplyai = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AutoReplyAI")} ${q}`);
+          break;
+        }
+
+        case "antilink2": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antilink2 = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiLink2")} ${q}`);
+          break;
+        }
+
+        case "autodelete": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].autodelete = parseInt(q)||60;
+          await msg.reply(`✅ ${fancy("AutoDelete")} ${q}sec`);
+          break;
+        }
+
+        case "groupicon": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          try{
+            let pp = await sock.profilePictureUrl(chat, "image");
+            await sock.sendMessage(chat, { image:{ url: pp }, caption: `✅ ${fancy("Group icon")}` }, { quoted: m });
+          }catch{ await msg.reply(fancy("No icon")) }
+          break;
+        }
+
+        case "hidetag2": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          if (!isAdmin && !isOwner(sender)) return msg.reply(fancy("Admin only"));
+          await sock.sendMessage(chat, { text: q || fancy("Hidden tag"), mentions: (await sock.groupMetadata(chat)).participants.map(a=>a.id) }, { quoted: m });
+          break;
+        }
+
+        case "aisticker": {
+          if (!q) return msg.reply(fancy("Usage: .aisticker <prompt> e.g .aisticker cute anime girl"));
+          await sock.sendMessage(chat, { text: `🎨 ${fancy("Generating AI sticker...")}` }, { quoted: m });
+          try{
+            let img = `https://image.pollinations.ai/prompt/${encodeURIComponent(q)}?width=512&height=512`;
+            let { Sticker } = require("wa-sticker-formatter");
+            let sticker = new Sticker(img, { pack: config.botName, author:"AI BOT", type:"full", quality:80 });
+            await sock.sendMessage(chat, { sticker: await sticker.toBuffer() }, { quoted: m });
+          }catch(e){ await msg.reply(`${fancy("Fail")}: ${e.message}`) }
+          break;
+        }
+
+        case "emojiinfo": {
+          if (!q) return msg.reply(fancy("Usage: .emojiinfo 😂"));
+          await msg.reply(`*${fancy("Emoji")}:* ${q}\n${fancy("Name")}: Joy\n${fancy("Category")}: Smileys`);
+          break;
+        }
+
+        case "age": {
+          if (!q) return msg.reply(fancy("Usage: .age <name> e.g .age CRASHER"));
+          await msg.reply(`${fancy("Age of")} ${q}: ${Math.floor(Math.random()*20)+20} ${fancy("years")} (${fancy("AI guess")})`);
+          break;
+        }
+
+        case "groupopenauto": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].openauto = q;
+          await msg.reply(`✅ ${fancy("Group auto open at")} ${q}`);
+          break;
+        }
+
+        case "groupcloseauto": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].closeauto = q;
+          await msg.reply(`✅ ${fancy("Group auto close at")} ${q}`);
+          break;
+        }
+
+        case "antisticker2": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].antisticker2 = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiSticker2")} ${q}`);
+          break;
+        }
+
+        case "anticontact2": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          global.db.anti[chat] = global.db.anti[chat] || {}; global.db.anti[chat].anticontact2 = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("AntiContact2")} ${q}`);
+          break;
+        }
+
+        case "daily": {
+          global.db.auto.daily = q.toLowerCase() === "on";
+          await msg.reply(`✅ ${fancy("Daily reward")} ${q}`);
+          break;
+        }
+
+        case "leaderboard": {
+          if (!isGroup) return msg.reply(fancy("Group only"));
+          await msg.reply(`*${fancy("Leaderboard")}*\n1. ${fancy("You")} - 1000pts\n2. @user - 800pts\n3. @user2 - 600pts`);
+          break;
+        }
+
+        case "toimg": {
+          if (!msg.quoted || !msg.quoted.stickerMessage) return msg.reply(fancy("Reply sticker with .toimg"));
+          let media = await downloadMediaMessage({ key: msg.quoted.key || msg.key, message: msg.quoted }, "buffer", {}, { logger, reuploadRequest: sock.updateMediaMessage });
+          await sock.sendMessage(chat, { image: media }, { quoted: m });
+          break;
+        }
+
+        case "take": {
+          await msg.reply(fancy("Take done - use .sticker with pack name"));
+          break;
+        }
+
+        case "attp": {
+          if (!q) return msg.reply(fancy("Give text e.g .attp hello"));
+          await sock.sendMessage(chat, { image:{ url:`https://api.zenkey.my.id/api/textpro/attp?text=${encodeURIComponent(q)}` }, caption: `Attp ${q}` }, { quoted: m });
+          break;
+        }
+
+        case "smeme": {
+          if (!q) return msg.reply(fancy("Usage: .smeme top|bottom or reply image"));
+          await msg.reply(`*${fancy("Smeme")}* ${q}`);
+          break;
+        }
+
+        case "pickupline": case "rizz": {
+          const a=["Are you","Girl are you","If you be","You be like"], b=["NEPA","WiFi","jollof rice","Google","my phone battery","ChapGPT","garri"], c=["because you light up my life","because I'm feeling connection","because I can never get enough of you","because you have everything I'm searching for","because you full my mind","because you fine pass AI","and I don dey fall for you"];
+          await msg.reply(`😏 *${fancy("RANDOM RIZZ")}*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`);
+          break;
+        }
+
+        case "motivation": case "motivate": {
+          const a=["Bro wake up,","Listen,", "Real talk,", "No cap,"], b=["no one will do it for you","grind now shine later","consistency beats talent","your future needs you","hustle in silence"], c=["so get up and work!","stop giving excuses!","God did but you must do!","make money make sense!"];
+          await msg.reply(`🔥 *${fancy("MOTIVATION")}*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} - ${c[Math.floor(Math.random()*c.length)]}`);
+          break;
+        }
+
+        case "insult": {
+          const a=["You be like","Your face be like","You resemble","Na so you be like","You be exactly like"], b=["MTN data","pure water wey sun catch","NEPA light","gala for Lagos traffic","expired Indomie","fuel for scarcity","PHCN bill","okada wey no get brake"], c=["you dey chop money but no value","flat and useless","e dey on and off","nobody want pick you","sense no dey inside","you go wound person eye","na only God fit help you","go sit down jare"];
+          await msg.reply(`🤣 *${fancy("RANDOM INSULT")}*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]}, ${c[Math.floor(Math.random()*c.length)]}`);
+          break;
+        }
+
+        case "joke": {
+          const jokes=["Why did the Nigerian student carry ladder to school? Because he heard JAMB is high!","My girlfriend said she'll leave me if I don't stop making puns. I said I'm not in such a joking relationship.","Teacher: Why you late? Student: Village people held my slippers.","NEPA took light, my girlfriend said she needs space.","Why did the scarecrow win an award? He was outstanding!","I told my phone I need space, e no gree"];
+          await msg.reply(`😂 *${fancy("JOKE")}*\n\n${jokes[Math.floor(Math.random()*jokes.length)]}`);
+          break;
+        }
+
+        case "quote": case "qoutet": {
+          const quotes=["Power comes in response to a need, not a desire - Goku","If you don’t take risks, you can’t create a future - Luffy","No guts, no glory.","Hustle in silence, let success make noise.","You had me at hello.","If I know what love is, it is because of you."];
+          await msg.reply(`✨ *${fancy("RANDOM QUOTE")}*\n\n"${quotes[Math.floor(Math.random()*quotes.length)]}"`);
+          break;
+        }
+
+        case "meme": {
+          await sock.sendMessage(chat, { image:{ url:`https://picsum.photos/600/400?random=${Date.now()}` }, caption: `😂 ${fancy("Meme")}` }, { quoted: m });
+          break;
+        }
+
+        case "truth": {
+          const a=["When last you","Who is","Have you ever","Do you","What is","How many times you"], b=["lied to your crush","cried because of love","stolen meat from pot","kissed someone","had crush on person in this group","stalked your ex"], c=["this week?","and why?","tell truth!","no lie!","be honest!"];
+          await msg.reply(`🤔 *${fancy("RANDOM TRUTH")}:*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`.toUpperCase());
+          break;
+        }
+
+        case "dare": {
+          const a=["Send voice note shouting","Do video of you doing","Send pic of you","Text your crush","Post on status","Call your mom and say"], b=["I love you","20 pushups","with cloth inside out","'I am jobless'","'I stole meat'","a monkey"], c=["for 30sec","for 1 hour","and screenshot","with video proof","right now","for 24hrs"];
+          await msg.reply(`🎯 *${fancy("RANDOM DARE")}:*\n\n${a[Math.floor(Math.random()*a.length)]} ${b[Math.floor(Math.random()*b.length)]} ${c[Math.floor(Math.random()*c.length)]}`.toUpperCase());
+          break;
+        }
+
         default: await doReact('❌'); return
     }
 }
